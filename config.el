@@ -28,9 +28,16 @@
 ;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
 (setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 14))
 (setq frame-title-format "")
+
+;; 设置 ace-window 超大字体
+(custom-set-faces!
+  '(aw-leading-char-face
+    :foreground "red"
+    :weight bold
+    :height 400))
+
+
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
 ;; refresh your font settings. If Emacs still can't find your font, it likely
@@ -89,13 +96,18 @@
 (map! "s-p" #'switch-to-buffer)
 
 
+;; 放大 window-select 的提示字体
+(after! window-select
+  (set-face-attribute 'doom-window-select-face nil :height 3.0)
+  (set-face-attribute 'doom-window-select-number-face nil :height 3))
+
+
 (after! centaur-tabs
   (map! :leader
         :prefix "t"
         "l" #'centaur-tabs-forward
-        "h" #'centaur-tabs-backward
-        "k" #'centaur-tabs--kill-this-buffer-dont-ask))
-(after! centaur-tabs
+        "h" #'centaur-tabs-backwar
+        "k" #'centaur-tabs--kill-this-buffer-dont-ask)
   (evil-define-key 'normal 'global
     (kbd "t h") #'centaur-tabs-backward
     (kbd "t l") #'centaur-tabs-forward
@@ -131,3 +143,5 @@
        :silent-success t
        :no-progress t
        :utils "open"))))
+
+

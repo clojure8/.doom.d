@@ -56,4 +56,5 @@
 ;; (unpin! t)
 
 (package! dwim-shell-command)
-(package! gptel :recipe (:nonrecursive t))
+
+
