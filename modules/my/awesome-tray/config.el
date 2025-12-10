@@ -24,26 +24,27 @@
 
 
 (use-package! awesome-tray
-  :after (hide-mode-line)
+  :after hide-mode-line
+  :hook (after-init . awesome-tray-mode)
   :config
   ;; Configuration for awesome-tray appearance
   (setq awesome-tray-mode-line-active-color "#5B6268")
   (setq awesome-tray-mode-line-height 0.1) ; Set height to minimal
   (setq awesome-tray-active-modules
-        '("evil" "buffer-name" "file-path" "git" "mode"))
+        '("evil" "buffer-name" "file-path" "git" "mode-name"))
 
   ;; Fix "double line" and "height" issues (critical step)
   ;; Doom themes add :box to mode-line, we need to remove it
   (defun fix-awesome-tray-modeline-face ()
     (set-face-attribute 'mode-line nil
-                        :height 0.1        ; minimal height
+                        :height 1        ; minimal height
                         :box nil           ; 【key】remove original box/border
                         :underline nil     ; remove underline (if you want complete hiding)
                         :overline nil      ; remove overline
                         :background awesome-tray-mode-line-active-color)
 
     (set-face-attribute 'mode-line-inactive nil
-                        :height 0.1
+                        :height 1
                         :box nil
                         :underline nil
                         :overline nil
