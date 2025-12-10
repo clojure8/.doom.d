@@ -10,6 +10,21 @@
 ;;       user-mail-address "john@doe.com")
 
 ;; fix mode line rendering artifacts
+;; 1000mb
+(setq gc-cons-threshold (* 3000 1000 1000))
+;; 文件大小限制优化
+(setq large-file-warning-threshold (* 500 1000 1000))  ; 500MB
+
+
+;; 快速滚动
+(setq fast-but-imprecise-scrolling t)
+;; 减少滚动跳动
+(setq scroll-conservatively 101)
+;; 鼠标滚轮优化
+(setq mouse-wheel-scroll-amount '(1 ((control) . 5)))
+;; 禁用垂直滚动优化
+(setq auto-window-vscroll nil)
+;; 避免颜色失真
 (setq ns-use-srgb-colorspace nil)
 
 
@@ -115,6 +130,19 @@
     (kbd "t h") #'centaur-tabs-backward
     (kbd "t l") #'centaur-tabs-forward
     (kbd "t k") #'centaur-tabs--kill-this-buffer-dont-ask))
+
+;; gptel 性能优化
+(after! gptel
+  ;; 垃圾回收优化
+  (setq gc-cons-threshold 100000000)  ; 100MB
+  (setq gc-cons-percentage 0.1)
+
+  ;; 网络连接优化
+  (setq network-security-level 'low)  ; 减少网络安全检查
+
+  ;; 渲染优化
+  (setq redisplay-skip-fontification-on-input t)
+  (setq auto-window-vscroll nil))
 
 
 (use-package! dwim-shell-command

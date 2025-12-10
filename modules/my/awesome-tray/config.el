@@ -4,6 +4,7 @@
 
 (use-package! hide-mode-line
   :config
+  (setq hide-mode-line-excluded-modes '())
   (add-hook! '(treemacs-mode-hook
                treemacs-git-mode-hook)
              #'hide-mode-line-mode)
@@ -54,7 +55,7 @@
   ;; (
   ;; add-hook 'awesome-tray-mode-hook #'fix-awesome-tray-modeline-face)
 
-  (add-hook 'doom-load-theme-hook #'awesome-tray-enable)
+  (add-hook! 'doom-load-theme-hook #'awesome-tray-mode #'hide-mode-line-mode)
 
   ;; Hook to ensure both modes are active when window configuration changes
   (add-hook! 'window-configuration-change-hook #'hide-mode-line-mode #'awesome-tray-mode)
