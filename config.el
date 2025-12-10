@@ -39,6 +39,8 @@
     :weight bold
     :height 400))
 
+;;像素级别平滑滚动
+(pixel-scroll-precision-mode 1)
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them

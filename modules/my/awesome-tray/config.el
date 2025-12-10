@@ -35,23 +35,24 @@
 
   ;; Fix "double line" and "height" issues (critical step)
   ;; Doom themes add :box to mode-line, we need to remove it
-  (defun fix-awesome-tray-modeline-face ()
-    (set-face-attribute 'mode-line nil
-                        :height 1        ; minimal height
-                        :box nil           ; 【key】remove original box/border
-                        :underline nil     ; remove underline (if you want complete hiding)
-                        :overline nil      ; remove overline
-                        :background awesome-tray-mode-line-active-color)
+  ;; (defun fix-awesome-tray-modeline-face ()
+  ;;   (set-face-attribute 'mode-line nil
+  ;;                       :height 1        ; minimal height
+  ;;                       :box nil           ; 【key】remove original box/border
+  ;;                       :underline nil     ; remove underline (if you want complete hiding)
+  ;;                       :overline nil      ; remove overline
+  ;;                       :background awesome-tray-mode-line-active-color)
 
-    (set-face-attribute 'mode-line-inactive nil
-                        :height 1
-                        :box nil
-                        :underline nil
-                        :overline nil
-                        :background awesome-tray-mode-line-active-color))
+  ;;   (set-face-attribute 'mode-line-inactive nil
+  ;;                       :height 1
+  ;;                       :box nil
+  ;;                       :underline nil
+  ;;                       :overline nil
+  ;;                       :background awesome-tray-mode-line-active-color))
 
-  ;; Apply fix when loading awesome-tray
-  (add-hook 'awesome-tray-mode-hook #'fix-awesome-tray-modeline-face)
+  ;; ;; Apply fix when loading awesome-tray
+  ;; (
+  ;; add-hook 'awesome-tray-mode-hook #'fix-awesome-tray-modeline-face)
 
 
   ;; Hook to ensure both modes are active when window configuration changes
