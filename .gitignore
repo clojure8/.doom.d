@@ -8,3 +8,5 @@ tmp/
 CLAUDE.md
 .trae/
 fly*
+
+.gemini/
