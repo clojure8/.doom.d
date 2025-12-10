@@ -25,7 +25,7 @@
 
 (use-package! awesome-tray
   :after hide-mode-line
-  :hook (after-init . awesome-tray-mode)
+  :hook (doom-after-init . awesome-tray-mode)
   :config
   ;; Configuration for awesome-tray appearance
   (setq awesome-tray-mode-line-active-color "#5B6268")
@@ -54,6 +54,8 @@
   ;; (
   ;; add-hook 'awesome-tray-mode-hook #'fix-awesome-tray-modeline-face)
 
+  (add-hook 'doom-load-theme-hook #'awesome-tray-enable)
 
   ;; Hook to ensure both modes are active when window configuration changes
-  (add-hook! 'window-configuration-change-hook #'hide-mode-line-mode #'awesome-tray-mode))
+  (add-hook! 'window-configuration-change-hook #'hide-mode-line-mode #'awesome-tray-mode)
+  )
