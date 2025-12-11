@@ -12,6 +12,15 @@
 ;; fix mode line rendering artifacts
 ;; 1000mb
 (setq gc-cons-threshold (* 3000 1000 1000))
+(setq gc-cons-percentage 0.1)
+;; 网络连接优化
+(setq network-security-level 'low)  ; 减少网络安全检查
+
+;; 渲染优化
+(setq redisplay-skip-fontification-on-input t)
+(setq auto-window-vscroll nil)
+
+
 ;; 文件大小限制优化
 (setq large-file-warning-threshold (* 500 1000 1000))  ; 500MB
 
@@ -124,25 +133,12 @@
   (map! :leader
         :prefix "t"
         "l" #'centaur-tabs-forward
-        "h" #'centaur-tabs-backwar
+        "h" #'centaur-tabs-backward
         "k" #'centaur-tabs--kill-this-buffer-dont-ask)
   (evil-define-key 'normal 'global
     (kbd "t h") #'centaur-tabs-backward
     (kbd "t l") #'centaur-tabs-forward
     (kbd "t k") #'centaur-tabs--kill-this-buffer-dont-ask))
-
-;; gptel 性能优化
-(after! gptel
-  ;; 垃圾回收优化
-  (setq gc-cons-threshold 100000000)  ; 100MB
-  (setq gc-cons-percentage 0.1)
-
-  ;; 网络连接优化
-  (setq network-security-level 'low)  ; 减少网络安全检查
-
-  ;; 渲染优化
-  (setq redisplay-skip-fontification-on-input t)
-  (setq auto-window-vscroll nil))
 
 
 (use-package! dwim-shell-command
