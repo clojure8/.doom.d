@@ -50,9 +50,9 @@
 ;;
 ;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
 ;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
-;; (setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 14))
-(setq frame-title-format "")
 (setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 14))
+(setq frame-title-format "")
+;; (setq doom-font (font-spec :family "霞鹜文楷等宽" :size 14))
 
 ;; 设置 ace-window 超大字体
 (custom-set-faces!

@@ -138,40 +138,54 @@
 (defun +go/debug-test ()
   "调试当前测试函数"
   (interactive)
-  (let ((test-name (save-excursion
-                     (when (re-search-backward "^func \\(Test[A-Za-z0-9_]*\\)" nil t)
-                       (match-string 1)))))
-    (if test-name
-        (dap-debug (list :type "go"
-                        :request "launch"
-                        :name "Debug Test"
-                        :mode "test"
-                        :program (file-name-directory (buffer-file-name))
-                        :args (list "-test.run" (format "^%s$" test-name))))
-      (message "未找到测试函数"))))
+  (if (buffer-file-name)
+      (let ((test-name (save-excursion
+                         (when (re-search-backward "^func \\(Test[A-Za-z0-9_]*\\)" nil t)
+                           (match-string 1))))
+            (program-path (expand-file-name (file-name-directory (buffer-file-name)))))
+        (if test-name
+            ;; 启动调试 (布局将由 hook 自动设置)
+            (dap-debug (list :type "go"
+                            :request "launch"
+                            :name "Debug Test"
+                            :mode "test"
+                            :program program-path
+                            :cwd program-path
+                            :args (list "-test.run" (format "^%s$" test-name))))
+          (message "未找到测试函数")))
+    (message "当前缓冲区没有关联文件")))
 
 (defun +go/debug-main ()
   "调试 main 函数"
   (interactive)
-  (let ((main-file (or (locate-dominating-file default-directory "main.go")
-                       (when (string-match "main\\.go$" (buffer-file-name))
-                         (file-name-directory (buffer-file-name))))))
-    (if main-file
-        (dap-debug (list :type "go"
-                        :request "launch"
-                        :name "Debug Main"
-                        :mode "debug"
-                        :program main-file))
+  (let ((main-dir (or (locate-dominating-file default-directory "main.go")
+                      (when (and (buffer-file-name)
+                                 (string-match "main\\.go$" (buffer-file-name)))
+                        (file-name-directory (buffer-file-name))))))
+    (if main-dir
+        (let ((program-path (expand-file-name main-dir)))
+          ;; 启动调试 (布局将由 hook 自动设置)
+          (dap-debug (list :type "go"
+                          :request "launch"
+                          :name "Debug Main"
+                          :mode "debug"
+                          :program program-path
+                          :cwd program-path)))
       (message "未找到 main.go 文件"))))
 
 (defun +go/debug-current-file ()
   "调试当前文件"
   (interactive)
-  (dap-debug (list :type "go"
-                  :request "launch"
-                  :name "Debug Current File"
-                  :mode "debug"
-                  :program (file-name-directory (buffer-file-name)))))
+  (if (buffer-file-name)
+      (let ((program-path (expand-file-name (file-name-directory (buffer-file-name)))))
+        ;; 启动调试 (布局将由 hook 自动设置)
+        (dap-debug (list :type "go"
+                        :request "launch"
+                        :name "Debug Current File"
+                        :mode "debug"
+                        :program program-path
+                        :cwd program-path)))
+    (message "当前缓冲区没有关联文件")))
 
 (defun +go/debug-attach ()
   "附加到运行中的 Go 进程"
@@ -226,25 +240,10 @@
   (interactive)
   (dap-step-out))
 
-(defun +go/debug-restart ()
-  "重启调试"
-  (interactive)
-  (dap-debug-restart))
-
-(defun +go/debug-stop ()
-  "停止调试"
-  (interactive)
-  (dap-disconnect))
-
 (defun +go/debug-eval ()
   "求值表达式"
   (interactive)
-  (call-interactively 'dap-eval))
-
-(defun +go/debug-eval-region ()
-  "求值选中区域"
-  (interactive)
-  (dap-eval-region (region-beginning) (region-end)))
+  (call-interactively #'dap-eval))
 
 (defun +go/debug-locals ()
   "显示局部变量"
@@ -255,6 +254,21 @@
   "显示调试会话"
   (interactive)
   (dap-ui-sessions))
+
+(defun +go/debug-restart ()
+  "重启调试"
+  (interactive)
+  (dap-debug-restart))
+
+(defun +go/debug-stop ()
+  "停止调试"
+  (interactive)
+  (dap-disconnect))
+
+(defun +go/debug-eval-region ()
+  "求值选中区域"
+  (interactive)
+  (dap-eval-region (region-beginning) (region-end)))
 
 (defun +go/debug-breakpoints ()
   "显示断点列表"
@@ -347,6 +361,10 @@
 
 (use-package! dap-mode
   :after go-mode
+  :init
+  ;; 禁用默认的 dap-ui 控制窗口，使用自定义布局
+  (setq dap-auto-configure-features '(sessions locals breakpoints expressions tooltip))
+  
   :config
   ;; 启用 dap-mode
   (dap-mode 1)
@@ -405,9 +423,88 @@
   ;; 设置断点样式
   (setq dap-breakpoint-condition-face 'dap-breakpoint-condition-face)
   
-  ;; 自动显示调试窗口
+  ;; 禁用默认的 dap-ui 控制面板弹窗
+  (setq dap-ui-controls-mode nil))
+
+;; 自定义 DAP 调试布局
+(defvar +go/dap-debug-window-config nil
+  "保存调试前的窗口配置")
+
+(defvar +go/dap-ui-windows nil
+  "保存 DAP UI 窗口引用")
+
+(defun +go/dap-setup-debug-layout (&optional session)
+  "设置 Go DAP 调试布局 - 使用 display-buffer-alist 控制缓冲区位置"
+  ;; 保存当前窗口配置
+  (setq +go/dap-debug-window-config (current-window-configuration))
+  
+  ;; 配置 DAP UI 缓冲区的显示规则
+  (setq-local display-buffer-alist
+              `(("\\*dap-ui-locals\\*"
+                 (display-buffer-in-side-window)
+                 (side . right)
+                 (slot . 0)
+                 (window-width . 60)
+                 (window-parameters . ((no-delete-other-windows . t))))
+                ("\\*dap-ui-breakpoints\\*"
+                 (display-buffer-in-side-window)
+                 (side . right)
+                 (slot . 1)
+                 (window-width . 60)
+                 (window-parameters . ((no-delete-other-windows . t))))
+                ("\\*dap-ui-expressions\\*"
+                 (display-buffer-in-side-window)
+                 (side . right)
+                 (slot . 2)
+                 (window-width . 60)
+                 (window-parameters . ((no-delete-other-windows . t))))
+                ("\\*dap-ui-repl\\*"
+                 (display-buffer-in-side-window)
+                 (side . bottom)
+                 (slot . 0)
+                 (window-height . 12)
+                 (window-parameters . ((no-delete-other-windows . t))))))
+  
+  ;; 调用 dap-ui 函数来创建缓冲区，它们会按照 display-buffer-alist 规则显示
+  (dap-ui-locals)
+  (dap-ui-breakpoints)
+  (dap-ui-expressions)
+  (dap-ui-repl))
+
+(defun +go/dap-cleanup-debug-layout (&optional session)
+  "清理调试布局，恢复之前的窗口配置"
+  ;; 恢复 display-buffer-alist
+  (setq-local display-buffer-alist nil)
+  
+  ;; 关闭所有 side windows
+  (when (window-with-parameter 'window-side)
+    (window-toggle-side-windows))
+  
+  ;; 恢复窗口配置
+  (when +go/dap-debug-window-config
+    (set-window-configuration +go/dap-debug-window-config)
+    (setq +go/dap-debug-window-config nil))
+  
+  ;; 关闭调试相关缓冲区
+  (dolist (buf '("*dap-ui-locals*" "*dap-ui-breakpoints*" 
+                 "*dap-ui-expressions*" "*dap-ui-sessions*"
+                 "*dap-ui-repl*"))
+    (when (get-buffer buf)
+      (kill-buffer buf))))
+
+;; 在调试会话启动时设置布局
+(after! dap-mode
+  (add-hook 'dap-session-created-hook #'+go/dap-setup-debug-layout)
+  
+  ;; 在调试停止时显示 hydra
   (add-hook 'dap-stopped-hook
-            (lambda (arg) (call-interactively #'dap-hydra))))
+            (lambda (arg) (call-interactively #'dap-hydra)))
+  
+  ;; 在调试会话终止时清理布局
+  (add-hook 'dap-terminated-hook #'+go/dap-cleanup-debug-layout)
+  
+  ;; 在调试会话断开连接时也清理布局
+  (add-hook 'dap-disconnected-hook #'+go/dap-cleanup-debug-layout))
 
 ;; 设置 Go 相关的键绑定
 (map! :after go-mode
@@ -466,6 +563,8 @@
       (:prefix ("x" . "tools")
        "i" #'+go/install-tools)
       
+
+      
       ;; Guru 相关
       (:prefix ("u" . "guru")
        "d" #'go-guru-describe
@@ -498,7 +597,9 @@
        "E" #'+go/debug-eval-region
        "l" #'+go/debug-locals
        "S" #'+go/debug-sessions
-       "L" #'+go/debug-breakpoints)
+       "L" #'+go/debug-breakpoints
+       "w" #'+go/dap-setup-debug-layout    ; 重新设置调试布局
+       "W" #'+go/dap-cleanup-debug-layout)  ; 清理调试布局
       
       ;; dlv 服务器
       (:prefix ("D" . "dlv-server")
@@ -562,54 +663,55 @@
   :config
   (transient-define-prefix +go/transient-menu ()
     "Go 开发菜单"
-    ["基础操作"
-     ("f" "填充结构体" go-fill-struct)
-     ("i" "实现接口" go-impl)
-     ("r" "重命名" go-rename)
-     ("d" "文档" +go/doc-at-point)]
-    ["标签管理"
-     ("ta" "添加标签" go-tag-add)
-     ("tr" "移除标签" go-tag-remove)]
-    ["运行"
-     ("rr" "运行当前文件" +go/run-current-file)
-     ("rm" "运行 main.go" +go/run-main)
-     ("rp" "Go Playground" go-playground)]
-    ["构建"
-     ("bb" "构建项目" +go/build-project)
-     ("bv" "go vet" +go/vet-project)
-     ("bg" "go generate" +go/generate)
-     ("bc" "清理" +go/clean)]
-    ["测试"
-     ("tt" "生成测试" go-gen-test-dwim)
-     ("tT" "生成所有测试" go-gen-test-all)
-     ("tr" "测试当前文件" +go/test-current-file)
-     ("tp" "测试项目" +go/test-project)
-     ("tb" "基准测试" +go/benchmark-project)
-     ("tc" "覆盖率" +go/coverage)]
-    ["模块管理"
-     ("mi" "初始化模块" +go/init-module)
-     ("mt" "go mod tidy" +go/mod-tidy)
-     ("md" "go mod download" +go/mod-download)
-     ("mg" "获取包" +go/get-package)
-     ("ml" "列出包" +go/list-packages)]
-    ["性能分析"
-     ("pc" "CPU 分析" +go/profile-cpu)
-     ("pm" "内存分析" +go/profile-mem)]
-    ["调试"
-     ("dd" "调试 main" +go/debug-main)
-     ("dt" "调试测试" +go/debug-test)
-     ("df" "调试当前文件" +go/debug-current-file)
-     ("db" "切换断点" +go/toggle-breakpoint)
-     ("dc" "继续执行" +go/debug-continue)
-     ("dn" "单步跳过" +go/debug-step-over)
-     ("di" "单步进入" +go/debug-step-into)
-     ("ds" "停止调试" +go/debug-stop)]
-    ["项目"
-     ("nc" "新建 CLI 项目" +go/new-cli-project)
-     ("nw" "新建 Web 项目" +go/new-web-project)]
-    ["工具"
-     ("xi" "安装工具" +go/install-tools)
-     ("q" "退出" transient-quit-one)])
+    [["基础操作"
+      ("f"  "填充结构体      " go-fill-struct)
+      ("i"  "实现接口        " go-impl)
+      ("R"  "重命名          " go-rename)
+      ("h"  "查看文档        " +go/doc-at-point)
+      ("ga" "添加标签        " go-tag-add)
+      ("gr" "移除标签        " go-tag-remove)]
+     ["运行 & 构建"
+      ("rr" "运行当前文件    " +go/run-current-file)
+      ("rm" "运行 main.go    " +go/run-main)
+      ("rp" "Go Playground   " go-playground)
+      ("bb" "构建项目        " +go/build-project)
+      ("bv" "go vet          " +go/vet-project)
+      ("bg" "go generate     " +go/generate)]
+     ["测试 & 分析"
+      ("tt" "生成测试        " go-gen-test-dwim)
+      ("tf" "测试当前文件    " +go/test-current-file)
+      ("tp" "测试项目        " +go/test-project)
+      ("tb" "基准测试        " +go/benchmark-project)
+      ("tc" "测试覆盖率      " +go/coverage)
+      ("pc" "CPU 性能分析    " +go/profile-cpu)]
+     ["模块 & 工具"
+      ("Mi" "初始化模块      " +go/init-module)
+      ("Mt" "go mod tidy     " +go/mod-tidy)
+      ("Mg" "获取包          " +go/get-package)
+      ("Ml" "列出包          " +go/list-packages)
+      ("xi" "安装开发工具    " +go/install-tools)
+      ("nc" "新建 CLI 项目   " +go/new-cli-project)]
+     ["调试控制"
+      ("dd" "调试 main       " +go/debug-main)
+      ("dt" "调试测试        " +go/debug-test)
+      ("df" "调试当前文件    " +go/debug-current-file)
+      ("db" "切换断点        " +go/toggle-breakpoint)
+      ("dc" "继续执行        " +go/debug-continue)
+      ("ds" "停止调试        " +go/debug-stop)
+      ("dw" "设置调试布局    " +go/dap-setup-debug-layout)
+      ("dW" "清理调试布局    " +go/dap-cleanup-debug-layout)]
+     ["调试步进 & 其他"
+      ("dn" "单步跳过        " +go/debug-step-over)
+      ("di" "单步进入        " +go/debug-step-into)
+      ("do" "单步跳出        " +go/debug-step-out)
+      ("de" "表达式求值      " +go/debug-eval)
+      ("dl" "查看局部变量    " +go/debug-locals)
+      ("dS" "调试会话        " +go/debug-sessions)
+      ("bc" "清理构建        " +go/clean)
+      ("pm" "内存分析        " +go/profile-mem)
+      ("nw" "新建 Web 项目   " +go/new-web-project)
+      ("Md" "下载依赖        " +go/mod-download)
+      ("q"  "退出菜单        " transient-quit-one)]])
 
   ;; 添加 transient 菜单键绑定
   (map! :after go-mode

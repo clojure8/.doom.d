@@ -736,13 +736,15 @@ if __name__ == \"__main__\":
 
 (use-package! python-mode
   :mode "\\.py\\'"
-  :config
-  ;; 设置 Python 解释器
+  :init
+  ;; 设置 Python 解释器（必须在 :init 中设置）
   (setq python-shell-interpreter "python3")
   (setq python-shell-interpreter-args "-i")
   
   ;; 禁用 Doom 默认的 LSP 配置，使用 lsp-bridge
   (setq +python-lsp-clients nil)
+  
+  :config
   
   ;; Python 模式钩子
   (add-hook 'python-mode-hook
@@ -1001,10 +1003,11 @@ if __name__ == \"__main__\":
 (after! exec-path-from-shell
   (exec-path-from-shell-copy-envs '("PYTHONPATH" "VIRTUAL_ENV" "CONDA_DEFAULT_ENV")))
 
-;; IPython 集成
-(when (executable-find "ipython")
-  (setq python-shell-interpreter "ipython"
-        python-shell-interpreter-args "-i --simple-prompt"))
+;; IPython 集成（延迟到运行时检测）
+(after! python-mode
+  (when (executable-find "ipython")
+    (setq python-shell-interpreter "ipython"
+          python-shell-interpreter-args "-i --simple-prompt")))
 
 ;; 自动激活项目虚拟环境
 (defun +python/auto-activate-venv ()
