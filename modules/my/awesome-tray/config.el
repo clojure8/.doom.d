@@ -20,7 +20,7 @@
                   magit-status-mode-hook
                   magit-log-mode-hook))
 
-    (add-hook hook #'+my-hide-special-mode-line-h)))
+    (add-hook! hook #'+my-hide-special-mode-line-h)))
 
 
 
