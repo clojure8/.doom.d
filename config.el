@@ -170,3 +170,9 @@
        :silent-success t
        :no-progress t
        :utils "open"))))
+
+;; 范围高亮
+(show-paren-mode 1)
+(setq show-paren-style 'expression
+      show-paren-delay 0
+      show-paren-when-point-inside-paren t)

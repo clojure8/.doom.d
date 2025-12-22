@@ -1,5 +1,5 @@
 ;; -*- no-byte-compile: t; -*-
-;;; my/ai/packages.el
+;;; my/claudecode/packages.el
 
 
 ;; 声明 monet (Git 仓库依赖)

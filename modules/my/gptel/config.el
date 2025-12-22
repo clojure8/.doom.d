@@ -29,6 +29,7 @@
   (setq gptel-temperature 0.7)           ; 降低随机性
   (setq gptel-response-filter-fn nil)    ; 禁用响应过滤以提高性能
   (setq gptel-playback nil)              ; 禁用回放功能
+  (setq gptel-show-reasoning nil)
 
   ;; 网络超时设置
   (setq gptel-request-timeout 30)        ; 30秒超时

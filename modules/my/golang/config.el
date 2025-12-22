@@ -377,6 +377,14 @@
   ;; 注册 Go 调试适配器
   (require 'dap-dlv-go)
   
+  ;; 自定义 DAP UI 缓冲区布局配置
+  (setq dap-ui-buffer-configurations
+        `(("*dap-ui-locals*" . ((side . right) (slot . 0) (window-width . 60)))
+          ("*dap-ui-breakpoints*" . ((side . right) (slot . 1) (window-width . 60)))
+          ("*dap-ui-expressions*" . ((side . right) (slot . 2) (window-width . 60)))
+          ("*dap-ui-sessions*" . ((side . right) (slot . 3) (window-width . 60)))
+          ("*dap-ui-repl*" . ((side . bottom) (slot . 0) (window-height . 12)))))
+  
   ;; 设置 Go 调试模板
   (dap-register-debug-template
    "Go Debug Main"
@@ -419,7 +427,6 @@
          :remotePath ""
          :host "localhost"
          :port 2345))
-  
   ;; 设置断点样式
   (setq dap-breakpoint-condition-face 'dap-breakpoint-condition-face)
   
@@ -438,38 +445,60 @@
   ;; 保存当前窗口配置
   (setq +go/dap-debug-window-config (current-window-configuration))
   
-  ;; 配置 DAP UI 缓冲区的显示规则
-  (setq-local display-buffer-alist
-              `(("\\*dap-ui-locals\\*"
-                 (display-buffer-in-side-window)
-                 (side . right)
-                 (slot . 0)
-                 (window-width . 60)
-                 (window-parameters . ((no-delete-other-windows . t))))
-                ("\\*dap-ui-breakpoints\\*"
-                 (display-buffer-in-side-window)
-                 (side . right)
-                 (slot . 1)
-                 (window-width . 60)
-                 (window-parameters . ((no-delete-other-windows . t))))
-                ("\\*dap-ui-expressions\\*"
-                 (display-buffer-in-side-window)
-                 (side . right)
-                 (slot . 2)
-                 (window-width . 60)
-                 (window-parameters . ((no-delete-other-windows . t))))
-                ("\\*dap-ui-repl\\*"
-                 (display-buffer-in-side-window)
-                 (side . bottom)
-                 (slot . 0)
-                 (window-height . 12)
-                 (window-parameters . ((no-delete-other-windows . t))))))
+  ;; 获取当前 session 的名称
+  (when session
+    (let ((session-name (dap--debug-session-name session)))
+      ;; 配置 DAP UI 缓冲区的显示规则
+      (setq-local display-buffer-alist
+                  `(("\\*dap-ui-locals\\*"
+                     (display-buffer-in-side-window)
+                     (side . right)
+                     (slot . 0)
+                     (window-width . 60)
+                     (window-parameters . ((no-delete-other-windows . t))))
+                    ("\\*dap-ui-breakpoints\\*"
+                     (display-buffer-in-side-window)
+                     (side . right)
+                     (slot . 1)
+                     (window-width . 60)
+                     (window-parameters . ((no-delete-other-windows . t))))
+                    ("\\*dap-ui-expressions\\*"
+                     (display-buffer-in-side-window)
+                     (side . right)
+                     (slot . 2)
+                     (window-width . 60)
+                     (window-parameters . ((no-delete-other-windows . t))))
+                    ("\\*dap-ui-repl\\*"
+                     (display-buffer-in-side-window)
+                     (side . bottom)
+                     (slot . 0)
+                     (window-height . 12)
+                     (window-parameters . ((no-delete-other-windows . t))))
+                    ;; 根据当前 session 名称动态匹配 log buffer
+                    (,(format "^ \\* %s log\\*$" (regexp-quote session-name))
+                     (display-buffer-in-side-window)
+                     (side . bottom)
+                     (slot . 1)
+                     (window-height . 12)
+                     (window-parameters . ((no-delete-other-windows . t))))))))
   
   ;; 调用 dap-ui 函数来创建缓冲区，它们会按照 display-buffer-alist 规则显示
   (dap-ui-locals)
   (dap-ui-breakpoints)
   (dap-ui-expressions)
   (dap-ui-repl))
+
+(defun my/dap-show-debug-log (session)
+  (when-let ((buf (dap--debug-session-server-log-buffer session)))
+    (message "xxxxxxxxxx")
+    (display-buffer
+     buf
+     '((display-buffer-in-side-window)
+       (side . bottom)
+       (slot . 1)
+       (window-height . 12)))))
+
+(add-hook 'dap-session-created-hook #'my/dap-show-debug-log)
 
 (defun +go/dap-cleanup-debug-layout (&optional session)
   "清理调试布局，恢复之前的窗口配置"
@@ -486,11 +515,17 @@
     (setq +go/dap-debug-window-config nil))
   
   ;; 关闭调试相关缓冲区
-  (dolist (buf '("*dap-ui-locals*" "*dap-ui-breakpoints*" 
-                 "*dap-ui-expressions*" "*dap-ui-sessions*"
-                 "*dap-ui-repl*"))
-    (when (get-buffer buf)
-      (kill-buffer buf))))
+  (dolist (buf (buffer-list))
+    (let ((buf-name (buffer-name buf)))
+      (when (string-match-p "^\\*dap-ui-" buf-name)
+        (kill-buffer buf))))
+  
+  ;; 关闭当前 session 的 log buffer
+  (when session
+    (let* ((session-name (dap--debug-session-name session))
+           (log-buf-name (format " * %s log*" session-name)))
+      (when (get-buffer log-buf-name)
+        (kill-buffer log-buf-name)))))
 
 ;; 在调试会话启动时设置布局
 (after! dap-mode
