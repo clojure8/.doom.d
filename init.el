@@ -203,16 +203,10 @@
        chatgpt-shell
        lsp-bridge
        golang
-       rust
-       python
-       vue
-       clojure
-       c
-       zig
        gptel
        awesome-tray
        translate
        ;; jinx
        layout
-       ;; minuet
+       minuet
        (org +pretty))

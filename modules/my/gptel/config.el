@@ -21,7 +21,7 @@
                         :endpoint "/api/coding/paas/v4/chat/completions"
                         :stream t
                         :key (lambda () (getenv "GPTEL_ZHIPU_API_KEY"))
-                        :models '(glm-4.6 glm-4.5 glm-4.5-air)))
+                        :models '(glm-5.1 glm-4.5-air)))
   (setq gptel-model 'glm-4.6)
 
   ;; 性能优化设置

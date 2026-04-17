@@ -5,4 +5,4 @@
 
   ;; 可选：设为默认模型
   ;; (setq chatgpt-shell-model-version "glm-4")
-  (setq chatgpt-shell-zhipu-key (getenv "CHATGPT_SHELL_ZHIPU_KEY")))
+  (setq chatgpt-shell-zhipu-key (getenv "GPTEL_ZHIPU_API_KEY")))
