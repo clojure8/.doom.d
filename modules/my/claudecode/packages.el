@@ -22,3 +22,6 @@
            :repo "stevemolitor/claude-code.el"
            :branch "main"
            :files ("*")))
+
+(package! claude-code-ide
+  :recipe (:host github :repo "manzaltu/claude-code-ide.el"))

@@ -13,3 +13,8 @@
   (setq claude-code-terminal-backend 'vterm)
   (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
   (claude-code-mode))
+
+(use-package! claude-code-ide
+  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+  :config
+  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
