@@ -13,3 +13,4 @@ fly*
 .vscode/
 ./.agent-shell/
 /.agent-shell/
+/layouts/

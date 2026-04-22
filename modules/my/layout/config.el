@@ -1,7 +1,11 @@
 ;;; my/layout/config.el -*- lexical-binding: t; -*-
 
 ;; Custom layout persistence system
-(defvar my/layout-directory (expand-file-name "layouts/" user-emacs-directory)
+(defvar my/layout-directory 
+  (expand-file-name "layouts/" 
+                    (or (bound-and-true-p doom-user-dir)
+                        (bound-and-true-p doom-private-dir)
+                        user-emacs-directory))
   "Directory to store saved layouts.")
 
 (defvar my/current-layouts (make-hash-table :test 'equal)
@@ -16,14 +20,28 @@
   "Get the file path for layout NAME."
   (expand-file-name (concat name ".layout") my/layout-directory))
 
+(defun my/get-layout-buffers ()
+  "Get alist of (name . file-path) for all buffers in current frame."
+  (let (alist)
+    (walk-windows
+     (lambda (w)
+       (let* ((buf (window-buffer w))
+              (name (buffer-name buf))
+              (path (buffer-file-name buf)))
+         (when path
+           (push (cons name path) alist))))
+     nil t)
+    alist))
+
 (defun my/save-layout (name)
   "Save current window configuration as NAME."
   (interactive "sLayout name: ")
-  (let ((config (current-window-configuration)))
-    (puthash name config my/current-layouts)
-    (my/ensure-layout-directory)
+  (my/ensure-layout-directory)
+  (let ((state (window-state-get (frame-root-window) t))
+        (buffers (my/get-layout-buffers)))
+    (puthash name (list :state state :buffers buffers) my/current-layouts)
     (with-temp-file (my/layout-file name)
-      (prin1 (window-state-get (frame-root-window) t) (current-buffer)))
+      (prin1 (list :state state :buffers buffers) (current-buffer)))
     (message "Layout '%s' saved" name)))
 
 (defun my/load-layout (name)
@@ -32,21 +50,28 @@
    (list (completing-read "Load layout: "
                           (delete-dups (copy-sequence (my/list-saved-layouts)))
                           nil nil)))
-  (let ((file (my/layout-file name)))
+  (let ((file (my/layout-file name))
+        data)
     (if (file-exists-p file)
-        (progn
-          (with-temp-buffer
-            (insert-file-contents file)
-            (let ((state (read (current-buffer))))
-              (window-state-put state (frame-root-window) 'safe)))
+        (with-temp-buffer
+          (insert-file-contents file)
+          (setq data (read (current-buffer))))
+      (setq data (gethash name my/current-layouts)))
+
+    (if data
+        (let ((state (if (plist-member data :state) (plist-get data :state) data))
+              (buffers (plist-get data :buffers)))
+          ;; Restore buffers first
+          (dolist (pair buffers)
+            (let ((buf-name (car pair))
+                  (file-path (cdr pair)))
+              (unless (get-buffer buf-name)
+                (when (file-exists-p file-path)
+                  (find-file-noselect file-path)))))
+          ;; Put window state
+          (window-state-put state (frame-root-window) 'safe)
           (message "Layout '%s' loaded" name))
-      ;; Try to load from current session
-      (let ((config (gethash name my/current-layouts)))
-        (if config
-            (progn
-              (set-window-configuration config)
-              (message "Layout '%s' restored from session" name))
-          (message "Layout '%s' not found" name))))))
+      (message "Layout '%s' not found" name))))
 
 (defun my/delete-layout (name)
   "Delete saved layout NAME."
@@ -133,8 +158,8 @@
       (when (file-exists-p file)
         (with-temp-buffer
           (insert-file-contents file)
-          (let ((state (read (current-buffer))))
-            (puthash name state my/current-layouts)))))))
+          (let ((data (read (current-buffer))))
+            (puthash name data my/current-layouts)))))))
 
 ;; Auto-save current layout periodically
 (defvar my/auto-save-layout-timer nil
@@ -179,9 +204,9 @@
     (delete-other-windows)))
 
 ;; Initialize on startup
-;; (add-hook 'emacs-startup-hook #'my/load-all-layouts)
-;; (add-hook 'emacs-startup-hook #'my/enable-auto-save-layout)
-;; (add-hook 'kill-emacs-hook #'my/auto-save-layout)
+(add-hook 'doom-first-input-hook #'my/load-all-layouts)
+(add-hook 'doom-first-input-hook #'my/enable-auto-save-layout)
+(add-hook 'kill-emacs-hook #'my/auto-save-layout)
 
 ;; Transient menu for layout operations
 (after! transient
