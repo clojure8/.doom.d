@@ -1,4 +1,4 @@
-;;; modules/my/caludecode/config.el -*- lexical-binding: t; -*-
+;;; modules/my/claudecode/config.el -*- lexical-binding: t; -*-
 
 ;; 继承 inheritenv (通常在 Doom Emacs 中不是必须的，因为 Doom 会处理环境变量)
 (use-package! inheritenv)

@@ -10,8 +10,8 @@
 ;;       user-mail-address "john@doe.com")
 
 ;; fix mode line rendering artifacts
-;; 1000mb
-(setq gc-cons-threshold (* 3000 1000 1000))
+;; 100mb
+(setq gc-cons-threshold (* 100 1024 1024))
 (setq gc-cons-percentage 0.1)
 ;; 网络连接优化
 (setq network-security-level 'low)  ; 减少网络安全检查

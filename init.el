@@ -200,7 +200,6 @@
        :my
        claudecode
        agentshell
-       chatgpt-shell
        lsp-bridge
        golang
        gptel
