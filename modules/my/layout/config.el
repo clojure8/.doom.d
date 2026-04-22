@@ -1,5 +1,7 @@
 ;;; my/layout/config.el -*- lexical-binding: t; -*-
 
+(require 'subr-x)
+(require 'transient)
 
 ;; Custom layout persistence system
 (defvar my/layout-directory (expand-file-name "layouts/" user-emacs-directory)
@@ -31,7 +33,7 @@
   "Load window configuration NAME."
   (interactive
    (list (completing-read "Load layout: "
-                          (delete-dups (my/list-saved-layouts))
+                          (delete-dups (copy-sequence (my/list-saved-layouts)))
                           nil nil)))
   (let ((file (my/layout-file name)))
     (if (file-exists-p file)
@@ -117,12 +119,8 @@
   "Create a main window with side panel layout (70-30 split)."
   (interactive)
   (delete-other-windows)
-  (split-window-right)
-  (let ((main-window (selected-window))
-        (side-window (next-window)))
-    (with-selected-window main-window
-      (enlarge-window-horizontally 20)))
-  (balance-windows-area))
+  (let ((width (floor (* 0.7 (window-total-width)))))
+    (split-window-right width)))
 
 (defun my/layout-reset ()
   "Reset to single window layout."
@@ -175,14 +173,13 @@
   (when (member my/auto-save-layout-name (my/list-saved-layouts))
     (my/load-layout my/auto-save-layout-name)))
 
-
 (defun my/window-toggle-maximize ()
   "Toggle maximize current window."
   (interactive)
   (if (= 1 (length (window-list)))
-      (winner-undo)
+      (when (bound-and-true-p winner-mode)
+        (winner-undo))
     (delete-other-windows)))
-
 
 ;; Initialize on startup
 ;; (add-hook 'emacs-startup-hook #'my/load-all-layouts)
@@ -190,28 +187,27 @@
 ;; (add-hook 'kill-emacs-hook #'my/auto-save-layout)
 
 ;; Transient menu for layout operations
-(after! transient
-  (transient-define-prefix my/layout-menu ()
-    "Window layout management menu."
-    [["Save/Load"
-      ("s" "Save layout" my/save-layout)
-      ("l" "Load layout" my/load-layout)
-      ("d" "Delete layout" my/delete-layout)
-      ("L" "List layouts" my/list-layouts)]
-     ["Templates"
-      ("2v" "2 vertical" my/layout-split-2-vertical)
-      ("2h" "2 horizontal" my/layout-split-2-horizontal)
-      ("3v" "3 vertical" my/layout-split-3-vertical)
-      ("3h" "3 horizontal" my/layout-split-3-horizontal)
-      ("g" "Grid 2x2" my/layout-split-grid)
-      ("m" "Main+Side" my/layout-split-main-side)]
-     ["Actions"
-      ("m" "Toggle Maximize" my/window-toggle-maximize)
-      ("u" "Undo layout" winner-undo)
-      ("r" "Redo layout" winner-redo)
-      ("R" "Reset" my/layout-reset)
-      ("=" "Balance" balance-windows)
-      ("q" "Quit" transient-quit-one)]]))
+(transient-define-prefix my/layout-menu ()
+  "Window layout management menu."
+  [["Save/Load"
+    ("s" "Save layout" my/save-layout)
+    ("l" "Load layout" my/load-layout)
+    ("d" "Delete layout" my/delete-layout)
+    ("L" "List layouts" my/list-layouts)]
+   ["Templates"
+    ("2v" "2 vertical" my/layout-split-2-vertical)
+    ("2h" "2 horizontal" my/layout-split-2-horizontal)
+    ("3v" "3 vertical" my/layout-split-3-vertical)
+    ("3h" "3 horizontal" my/layout-split-3-horizontal)
+    ("g" "Grid 2x2" my/layout-split-grid)
+    ("m" "Main+Side" my/layout-split-main-side)]
+   ["Actions"
+    ("m" "Toggle Maximize" my/window-toggle-maximize)
+    ("u" "Undo layout" winner-undo)
+    ("r" "Redo layout" winner-redo)
+    ("R" "Reset" my/layout-reset)
+    ("=" "Balance" balance-windows)
+    ("q" "Quit" transient-quit-one)]])
 
 (map! :leader
       :prefix "l"
