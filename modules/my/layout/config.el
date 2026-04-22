@@ -1,8 +1,5 @@
 ;;; my/layout/config.el -*- lexical-binding: t; -*-
 
-(require 'subr-x)
-(require 'transient)
-
 ;; Custom layout persistence system
 (defvar my/layout-directory (expand-file-name "layouts/" user-emacs-directory)
   "Directory to store saved layouts.")
@@ -187,27 +184,28 @@
 ;; (add-hook 'kill-emacs-hook #'my/auto-save-layout)
 
 ;; Transient menu for layout operations
-(transient-define-prefix my/layout-menu ()
-  "Window layout management menu."
-  [["Save/Load"
-    ("s" "Save layout" my/save-layout)
-    ("l" "Load layout" my/load-layout)
-    ("d" "Delete layout" my/delete-layout)
-    ("L" "List layouts" my/list-layouts)]
-   ["Templates"
-    ("2v" "2 vertical" my/layout-split-2-vertical)
-    ("2h" "2 horizontal" my/layout-split-2-horizontal)
-    ("3v" "3 vertical" my/layout-split-3-vertical)
-    ("3h" "3 horizontal" my/layout-split-3-horizontal)
-    ("g" "Grid 2x2" my/layout-split-grid)
-    ("m" "Main+Side" my/layout-split-main-side)]
-   ["Actions"
-    ("m" "Toggle Maximize" my/window-toggle-maximize)
-    ("u" "Undo layout" winner-undo)
-    ("r" "Redo layout" winner-redo)
-    ("R" "Reset" my/layout-reset)
-    ("=" "Balance" balance-windows)
-    ("q" "Quit" transient-quit-one)]])
+(after! transient
+  (transient-define-prefix my/layout-menu ()
+    "Window layout management menu."
+    [["Save/Load"
+      ("s" "Save layout" my/save-layout)
+      ("l" "Load layout" my/load-layout)
+      ("d" "Delete layout" my/delete-layout)
+      ("L" "List layouts" my/list-layouts)]
+     ["Templates"
+      ("2v" "2 vertical" my/layout-split-2-vertical)
+      ("2h" "2 horizontal" my/layout-split-2-horizontal)
+      ("3v" "3 vertical" my/layout-split-3-vertical)
+      ("3h" "3 horizontal" my/layout-split-3-horizontal)
+      ("g" "Grid 2x2" my/layout-split-grid)
+      ("m" "Main+Side" my/layout-split-main-side)]
+     ["Actions"
+      ("m" "Toggle Maximize" my/window-toggle-maximize)
+      ("u" "Undo layout" winner-undo)
+      ("r" "Redo layout" winner-redo)
+      ("R" "Reset" my/layout-reset)
+      ("=" "Balance" balance-windows)
+      ("q" "Quit" transient-quit-one)]]))
 
 (map! :leader
       :prefix "l"
