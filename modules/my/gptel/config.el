@@ -22,7 +22,7 @@
                         :stream t
                         :key (lambda () (getenv "GPTEL_ZHIPU_API_KEY"))
                         :models '(glm-5.1 glm-4.5-air)))
-  (setq gptel-model 'glm-4.6)
+  (setq gptel-model 'glm-5.1)
 
   ;; 性能优化设置
   (setq gptel-max-tokens 2000)           ; 限制响应长度
@@ -33,8 +33,5 @@
 
   ;; 网络超时设置
   (setq gptel-request-timeout 30)        ; 30秒超时
-
-  ;; 缓存设置
-  (setq gptel-history (make-hash-table :test 'equal))
 
   )

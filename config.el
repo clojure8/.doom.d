@@ -10,12 +10,8 @@
 ;;       user-mail-address "john@doe.com")
 
 ;; fix mode line rendering artifacts
-;; 100mb
-(setq gc-cons-threshold (* 100 1024 1024))
+(setq gc-cons-threshold (* 20 1024 1024))
 (setq gc-cons-percentage 0.1)
-;; 网络连接优化
-(setq network-security-level 'low)  ; 减少网络安全检查
-
 ;; 渲染优化
 (setq redisplay-skip-fontification-on-input t)
 (setq auto-window-vscroll nil)
@@ -31,8 +27,6 @@
 (setq scroll-conservatively 101)
 ;; 鼠标滚轮优化
 (setq mouse-wheel-scroll-amount '(1 ((control) . 5)))
-;; 禁用垂直滚动优化
-(setq auto-window-vscroll nil)
 ;; 避免颜色失真
 (setq ns-use-srgb-colorspace nil)
 
