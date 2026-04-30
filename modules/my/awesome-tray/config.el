@@ -32,4 +32,7 @@
   (setq awesome-tray-mode-line-height 0.1) ; Set height to minimal
   (setq awesome-tray-active-modules
         '("evil" "buffer-name" "file-path" "git" "mode-name"))
-  (add-hook! 'doom-load-theme-hook #'awesome-tray-mode #'hide-mode-line-mode))
+  (add-hook! 'doom-load-theme-hook #'awesome-tray-mode #'hide-mode-line-mode)
+
+  ;; Hook to ensure both modes are active when window configuration changes
+  (add-hook! 'window-configuration-change-hook #'hide-mode-line-mode #'awesome-tray-mode))
