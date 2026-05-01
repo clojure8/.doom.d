@@ -46,7 +46,43 @@
         org-link-descriptive t
         org-pretty-entities-include-sub-superscripts t)
 
+  ;; 类 Typora 居中阅读
+  (defvar my/org-body-width-ratio (/ 2.0 3)
+    "Ratio of screen width used for org body text.")
+
+  (defun my/org-margin-width ()
+    "Calculate margin char width for centering at 2/3 screen."
+    (when (display-graphic-p)
+      (let* ((char-width (frame-char-width))
+             (frame-width (frame-pixel-width))
+             (body-pixels (truncate (* frame-width my/org-body-width-ratio)))
+             (margin-pixels (/ (- frame-width body-pixels) 2)))
+        (/ margin-pixels char-width))))
+
+  (defun my/org-center-buffer ()
+    "Set window margins to center buffer content."
+    (when (display-graphic-p)
+      (let ((margin (my/org-margin-width)))
+        (set-window-margins (selected-window) margin margin))))
+
+  (defun my/org-restore-centering ()
+    "Restore centered margins for all org windows."
+    (dolist (win (get-buffer-window-list nil nil t))
+      (with-selected-window win (my/org-center-buffer))))
+
+  ;; 光标在表格上时自动取消居中（全宽显示表格），离开时恢复居中
+  (defun my/org-table-adjust-margin ()
+    "Remove margins when on a table line, restore otherwise."
+    (when (and (derived-mode-p 'org-mode) (display-graphic-p))
+      (if (org-at-table-p)
+          (set-window-margins (selected-window) 0 0)
+        (my/org-center-buffer))))
+
   (add-hook 'org-mode-hook
             (lambda ()
               (display-line-numbers-mode 0)
-              (setq-local truncate-lines t))))
+              (setq-local truncate-lines t)
+              (my/org-center-buffer)
+              (add-hook 'post-command-hook #'my/org-table-adjust-margin nil t)
+              (add-hook 'window-configuration-change-hook
+                        #'my/org-restore-centering nil t))))
