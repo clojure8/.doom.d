@@ -59,17 +59,8 @@ Unlike visual-fill-column-mode, this won't compress wide tables."
   (add-hook 'org-mode-hook
             (lambda ()
               (display-line-numbers-mode 0)
-              (visual-line-mode 1)
+              (setq-local truncate-lines t)
               (my/org-center-buffer)
               ;; 窗口大小变化时重新计算 margin
               (add-hook 'window-configuration-change-hook
                         #'my/org-center-all-windows nil t))))
-
-;; 修复 org-table 在 valign 下的对齐
-(after! org
-  (advice-add 'org-table-align :after
-              (lambda (&rest _)
-                (when (and (bound-and-true-p visual-line-mode)
-                           (bound-and-true-p valign-mode))
-                  (valign-mode -1)
-                  (valign-mode 1)))))
