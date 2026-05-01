@@ -28,6 +28,16 @@
         '(("TODO" :inverse-video t :inherit org-todo)
           ("DONE" :inverse-video t :inherit org-done))))
 
+;; Typora 风格预览：光标进入时才显示隐藏的标记符号
+(use-package! org-appear
+  :after org
+  :hook (org-mode . org-appear-mode)
+  :config
+  (setq org-appear-autoemphasis t
+        org-appear-autolinks t
+        org-appear-autosubmarkers t
+        org-appear-delay 0.0))
+
 ;; 全局美化
 (after! org
   (setq org-ellipsis " ▾"
@@ -36,42 +46,21 @@
         org-link-descriptive t
         org-pretty-entities-include-sub-superscripts t)
 
-  ;; 类 Typora 居中阅读：用 margin 居中，不压缩表格
-  (defvar my/org-body-width-ratio (/ 2.0 3)
-    "Ratio of screen width used for org body text.")
-
-  (defun my/org-center-buffer ()
-    "Set window margins to center buffer content at 2/3 screen width.
-Unlike visual-fill-column-mode, this won't compress wide tables."
-    (when (display-graphic-p)
-      (let* ((char-width (frame-char-width))
-             (frame-width (frame-pixel-width))
-             (body-pixels (truncate (* frame-width my/org-body-width-ratio)))
-             (margin-pixels (/ (- frame-width body-pixels) 2))
-             (margin-chars (/ margin-pixels char-width)))
-        (set-window-margins (selected-window) margin-chars margin-chars))))
-
-  (defun my/org-center-all-windows (&rest _)
-    "Apply centering to all windows displaying an org buffer."
-    (dolist (win (window-list))
-      (when (with-current-buffer (window-buffer win)
-              (derived-mode-p 'org-mode))
-        (with-selected-window win (my/org-center-buffer)))))
+  ;; 类 Typora 居中阅读
+  ;; 使用 visual-fill-column 居中文本，fill-column 设为屏幕 2/3 宽度
+  ;; org-table 行通过 org-mode 自身的对齐机制处理，不受影响
+  (defvar my/org-fill-column
+    (/ (* (display-pixel-width) 2) (* 3 (frame-char-width)))
+    "Org mode fill-column, approximately 2/3 of screen width.")
 
   (add-hook 'org-mode-hook
             (lambda ()
               (display-line-numbers-mode 0)
-              (setq-local truncate-lines t)
-              (my/org-center-buffer)
-              ;; 窗口大小变化时重新计算 margin
-              (add-hook 'window-configuration-change-hook
-                        #'my/org-center-all-windows nil t))))
-
-;; Typora 风格预览：光标进入时才显示隐藏的标记符号
-(use-package! org-appear
-  :hook (org-mode . org-appear-mode)
-  :config
-  (setq org-appear-autoemphasis t      ; *bold* /italic/ =code= ~verbatim~
-        org-appear-autolinks t          ; [[link][desc]]
-        org-appear-autosubmarkers t     ; subscript/superscript markers
-        org-appear-delay 0.0))          ; 即时显示，无延迟
+              (setq-local fill-column my/org-fill-column
+                          truncate-lines nil)
+              (visual-line-mode 1)
+              (visual-fill-column-mode 1)
+              (setq visual-fill-column-center-text t
+                    visual-fill-column-fringes-outside-margins t
+                    left-fringe-width 0
+                    right-fringe-width 0))))
