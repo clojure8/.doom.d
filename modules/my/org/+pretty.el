@@ -32,11 +32,29 @@
 (after! org
   (setq org-ellipsis " ▾"
         org-hide-leading-stars t
-        org-image-actual-width '(600)
-        fill-column 100)
+        org-image-actual-width '(600))
 
-  ;; 居中显示，增大左右 margin
+  ;; 类 Typora 居中阅读：文本居中，宽度约为屏幕 2/3
+  (defvar my/org-fill-column
+    (/ (* (display-pixel-width) 2) (* 3 (frame-char-width)))
+    "Org mode fill-column, approximately 2/3 of screen width.")
+
   (add-hook 'org-mode-hook
             (lambda ()
+              (setq-local fill-column my/org-fill-column)
+              (display-line-numbers-mode 0)
               (visual-line-mode 1)
-              (visual-fill-column-mode 1))))
+              (visual-fill-column-mode 1)
+              (setq visual-fill-column-center-text t
+                    visual-fill-column-fringes-outside-margins t
+                    left-fringe-width 0
+                    right-fringe-width 0))))
+
+;; 修复 org-table 在 visual-line-mode 下的换行变形
+(after! org
+  (advice-add 'org-table-align :after
+              (lambda (&rest _)
+                (when (and (bound-and-true-p visual-line-mode)
+                           (bound-and-true-p valign-mode))
+                  (valign-mode -1)
+                  (valign-mode 1)))))
