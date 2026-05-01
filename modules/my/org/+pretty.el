@@ -46,21 +46,7 @@
         org-link-descriptive t
         org-pretty-entities-include-sub-superscripts t)
 
-  ;; 类 Typora 居中阅读
-  ;; 使用 visual-fill-column 居中文本，fill-column 设为屏幕 2/3 宽度
-  ;; org-table 行通过 org-mode 自身的对齐机制处理，不受影响
-  (defvar my/org-fill-column
-    (/ (* (display-pixel-width) 2) (* 3 (frame-char-width)))
-    "Org mode fill-column, approximately 2/3 of screen width.")
-
   (add-hook 'org-mode-hook
             (lambda ()
               (display-line-numbers-mode 0)
-              (setq-local fill-column my/org-fill-column
-                          truncate-lines nil)
-              (visual-line-mode 1)
-              (visual-fill-column-mode 1)
-              (setq visual-fill-column-center-text t
-                    visual-fill-column-fringes-outside-margins t
-                    left-fringe-width 0
-                    right-fringe-width 0))))
+              (setq-local truncate-lines t))))
