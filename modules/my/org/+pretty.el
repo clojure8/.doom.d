@@ -34,23 +34,38 @@
         org-hide-leading-stars t
         org-image-actual-width '(600))
 
-  ;; 类 Typora 居中阅读：文本居中，宽度约为屏幕 2/3
-  (defvar my/org-fill-column
-    (/ (* (display-pixel-width) 2) (* 3 (frame-char-width)))
-    "Org mode fill-column, approximately 2/3 of screen width.")
+  ;; 类 Typora 居中阅读：用 margin 居中，不压缩表格
+  (defvar my/org-body-width-ratio (/ 2.0 3)
+    "Ratio of screen width used for org body text.")
+
+  (defun my/org-center-buffer ()
+    "Set window margins to center buffer content at 2/3 screen width.
+Unlike visual-fill-column-mode, this won't compress wide tables."
+    (when (display-graphic-p)
+      (let* ((char-width (frame-char-width))
+             (frame-width (frame-pixel-width))
+             (body-pixels (truncate (* frame-width my/org-body-width-ratio)))
+             (margin-pixels (/ (- frame-width body-pixels) 2))
+             (margin-chars (/ margin-pixels char-width)))
+        (set-window-margins (selected-window) margin-chars margin-chars))))
+
+  (defun my/org-center-all-windows (&rest _)
+    "Apply centering to all windows displaying an org buffer."
+    (dolist (win (window-list))
+      (when (with-current-buffer (window-buffer win)
+              (derived-mode-p 'org-mode))
+        (with-selected-window win (my/org-center-buffer)))))
 
   (add-hook 'org-mode-hook
             (lambda ()
-              (setq-local fill-column my/org-fill-column)
               (display-line-numbers-mode 0)
               (visual-line-mode 1)
-              (visual-fill-column-mode 1)
-              (setq visual-fill-column-center-text t
-                    visual-fill-column-fringes-outside-margins t
-                    left-fringe-width 0
-                    right-fringe-width 0))))
+              (my/org-center-buffer)
+              ;; 窗口大小变化时重新计算 margin
+              (add-hook 'window-configuration-change-hook
+                        #'my/org-center-all-windows nil t))))
 
-;; 修复 org-table 在 visual-line-mode 下的换行变形
+;; 修复 org-table 在 valign 下的对齐
 (after! org
   (advice-add 'org-table-align :after
               (lambda (&rest _)
