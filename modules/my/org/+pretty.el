@@ -32,4 +32,11 @@
 (after! org
   (setq org-ellipsis " ▾"
         org-hide-leading-stars t
-        org-image-actual-width '(600)))
+        org-image-actual-width '(600)
+        fill-column 100)
+
+  ;; 居中显示，增大左右 margin
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (visual-line-mode 1)
+              (visual-fill-column-mode 1))))
