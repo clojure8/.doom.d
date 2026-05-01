@@ -1,26 +1,35 @@
 ;;; my/org/+pretty.el -*- lexical-binding: t; -*-
 
-;; (use-package! org-superstar
-;;   :hook ((org-mode . org-superstar-mode)))
-
+;; 使用 valign 对齐表格（org 和 markdown）
 (use-package! valign
   :hook ((org-mode . valign-mode)
-         (markdown-mode-hook . valign-mode))
+         (markdown-mode . valign-mode))
   :config
-  ;; 基础美化设置，与 valign 兼容
   (setq org-highlight-latex-and-related '(native script entities)
         org-pretty-entities t
         org-hide-emphasis-markers t)
 
-  ;; 优化表格显示
   (add-hook 'org-mode-hook
             (lambda ()
               (setq-local org-table-formula-header-flag t
                           org-table-auto-align t
                           org-table-fix-formulas-flag t))))
 
+;; org-modern 美化（替代 org-superstar，避免冲突）
 (after! org-modern
-  ;; 彻底关闭表格部分
   (setq org-modern-table nil
         org-modern-table-horizontal nil
-        org-modern-table-vertical nil))
+        org-modern-table-vertical nil
+        org-modern-star '("◉" "○" "✸" "✿" "◈")
+        org-modern-list '((43 . "•") (45 . "–") (42 . "➤"))
+        org-modern-priority t
+        org-modern-block t
+        org-modern-todo-faces
+        '(("TODO" :inverse-video t :inherit org-todo)
+          ("DONE" :inverse-video t :inherit org-done))))
+
+;; 全局美化
+(after! org
+  (setq org-ellipsis " ▾"
+        org-hide-leading-stars t
+        org-image-actual-width '(600)))
