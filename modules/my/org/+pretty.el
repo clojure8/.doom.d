@@ -32,7 +32,9 @@
 (after! org
   (setq org-ellipsis " ▾"
         org-hide-leading-stars t
-        org-image-actual-width '(600))
+        org-image-actual-width '(600)
+        org-link-descriptive t
+        org-pretty-entities-include-sub-superscripts t)
 
   ;; 类 Typora 居中阅读：用 margin 居中，不压缩表格
   (defvar my/org-body-width-ratio (/ 2.0 3)
@@ -64,3 +66,12 @@ Unlike visual-fill-column-mode, this won't compress wide tables."
               ;; 窗口大小变化时重新计算 margin
               (add-hook 'window-configuration-change-hook
                         #'my/org-center-all-windows nil t))))
+
+;; Typora 风格预览：光标进入时才显示隐藏的标记符号
+(use-package! org-appear
+  :hook (org-mode . org-appear-mode)
+  :config
+  (setq org-appear-autoemphasis t      ; *bold* /italic/ =code= ~verbatim~
+        org-appear-autolinks t          ; [[link][desc]]
+        org-appear-autosubmarkers t     ; subscript/superscript markers
+        org-appear-delay 0.0))          ; 即时显示，无延迟

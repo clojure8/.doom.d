@@ -2,3 +2,4 @@
 
 (package! valign
   :recipe (:host github :repo "casouri/valign"))
+(package! org-appear)
