@@ -131,10 +131,10 @@
   "Create a 2x2 grid layout."
   (interactive)
   (delete-other-windows)
-  (split-window-right)
-  (split-window-below)
-  (other-window 1)
-  (split-window-below)
+  (split-window-right)   ; W1 left | W2 right, cursor on W1
+  (split-window-below)   ; W1 top-left / W3 bottom-left | W2 right, cursor on W1
+  (other-window 2)       ; skip W3, jump to W2 (right)
+  (split-window-below)   ; W2 top-right / W4 bottom-right
   (balance-windows))
 
 (defun my/layout-split-main-side ()
@@ -170,7 +170,7 @@
 
 (defun my/auto-save-layout ()
   "Automatically save current layout."
-  (when (> (length (window-list)) 1)
+  (when (> (count-windows) 1)
     (my/save-layout my/auto-save-layout-name)))
 
 (defun my/enable-auto-save-layout ()
@@ -198,7 +198,7 @@
 (defun my/window-toggle-maximize ()
   "Toggle maximize current window."
   (interactive)
-  (if (= 1 (length (window-list)))
+  (if (one-window-p t)
       (when (bound-and-true-p winner-mode)
         (winner-undo))
     (delete-other-windows)))
@@ -223,7 +223,7 @@
       ("3v" "3 vertical" my/layout-split-3-vertical)
       ("3h" "3 horizontal" my/layout-split-3-horizontal)
       ("g" "Grid 2x2" my/layout-split-grid)
-      ("m" "Main+Side" my/layout-split-main-side)]
+      ("M" "Main+Side" my/layout-split-main-side)]
      ["Actions"
       ("m" "Toggle Maximize" my/window-toggle-maximize)
       ("u" "Undo layout" winner-undo)
