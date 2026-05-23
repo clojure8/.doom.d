@@ -9,6 +9,14 @@
 ;; (setq user-full-name "John Doe"
 ;;       user-mail-address "john@doe.com")
 
+;; emacsclient -nw 偶尔出现 menu-bar 的兜底修复。
+;; Doom 在 macOS 上用 'tty 哨兵延迟初始化 menu-bar，after-make-frame-functions
+;; 存在竞态，server-after-make-frame-hook 在 frame 完全就绪后执行，更可靠。
+(add-hook 'server-after-make-frame-hook
+          (lambda ()
+            (unless (display-graphic-p)
+              (set-frame-parameter nil 'menu-bar-lines 0))))
+
 ;; fix mode line rendering artifacts
 (setq gc-cons-threshold (* 20 1024 1024))
 (setq gc-cons-percentage 0.1)
