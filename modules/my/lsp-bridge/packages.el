@@ -13,6 +13,6 @@
 ;; TUI 下 acm child-frame 不可用，用 popon + acm-terminal 提供 terminal popup 渲染
 ;; acm-terminal 通过 advice 替换 acm-frame 函数，不修改 lsp-bridge 源码
 (package! popon
-  :recipe (:host nil :url "https://codeberg.org/akib/emacs-popon.git"))
+  :recipe (:type git :host nil :repo "https://codeberg.org/akib/emacs-popon.git"))
 (package! acm-terminal
   :recipe (:host github :repo "twlz0ne/acm-terminal"))
