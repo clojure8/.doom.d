@@ -47,30 +47,37 @@
 (defun my/load-layout (name)
   "Load window configuration NAME."
   (interactive
-   (list (completing-read "Load layout: "
-                          (delete-dups (copy-sequence (my/list-saved-layouts)))
-                          nil nil)))
+   (let ((layouts (my/list-saved-layouts)))
+     (unless layouts
+       (user-error "No saved layouts"))
+     (list (completing-read "Load layout: " layouts nil t))))
   (let ((file (my/layout-file name))
         data)
     (if (file-exists-p file)
-        (with-temp-buffer
-          (insert-file-contents file)
-          (setq data (read (current-buffer))))
+        (condition-case err
+            (with-temp-buffer
+              (insert-file-contents file)
+              (setq data (read (current-buffer))))
+          (error
+           (message "Failed to read layout '%s': %s" name (error-message-string err))))
       (setq data (gethash name my/current-layouts)))
 
     (if data
         (let ((state (if (plist-member data :state) (plist-get data :state) data))
               (buffers (plist-get data :buffers)))
-          ;; Restore buffers first
+          ;; Restore buffers first so window-state-put can find them by name
           (dolist (pair buffers)
             (let ((buf-name (car pair))
                   (file-path (cdr pair)))
               (unless (get-buffer buf-name)
                 (when (file-exists-p file-path)
                   (find-file-noselect file-path)))))
-          ;; Put window state
-          (window-state-put state (frame-root-window) 'safe)
-          (message "Layout '%s' loaded" name))
+          (condition-case err
+              (progn
+                (window-state-put state (frame-root-window) 'safe)
+                (message "Layout '%s' loaded" name))
+            (error
+             (message "Failed to restore layout '%s': %s" name (error-message-string err)))))
       (message "Layout '%s' not found" name))))
 
 (defun my/delete-layout (name)
@@ -156,10 +163,12 @@
   (dolist (name (my/list-saved-layouts))
     (let ((file (my/layout-file name)))
       (when (file-exists-p file)
-        (with-temp-buffer
-          (insert-file-contents file)
-          (let ((data (read (current-buffer))))
-            (puthash name data my/current-layouts)))))))
+        (condition-case err
+            (with-temp-buffer
+              (insert-file-contents file)
+              (puthash name (read (current-buffer)) my/current-layouts))
+          (error
+           (message "Skipping corrupted layout '%s': %s" name (error-message-string err))))))))
 
 ;; Auto-save current layout periodically
 (defvar my/auto-save-layout-timer nil
@@ -205,6 +214,7 @@
 
 ;; Initialize on startup
 (add-hook 'doom-first-input-hook #'my/load-all-layouts)
+(add-hook 'doom-first-input-hook #'my/restore-last-layout)
 (add-hook 'doom-first-input-hook #'my/enable-auto-save-layout)
 (add-hook 'kill-emacs-hook #'my/auto-save-layout)
 
