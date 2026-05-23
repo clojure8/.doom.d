@@ -27,38 +27,26 @@
 (setq scroll-conservatively 101)
 ;; 鼠标滚轮优化
 (setq mouse-wheel-scroll-amount '(1 ((control) . 5)))
-;; 避免颜色失真
-(setq ns-use-srgb-colorspace nil)
 
+(when (display-graphic-p)
+  ;; 避免颜色失真（macOS Cocoa 专用）
+  (setq ns-use-srgb-colorspace nil)
 
-;; Doom exposes five (optional) variables for controlling fonts in Doom:
-;;
-;; - `doom-font' -- the primary font to use
-;; - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
-;; - `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
-;; - `doom-symbol-font' -- for symbols
-;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
-;; See 'C-h v doom-font' for documentation and more examples of what they
-;; accept. For example:
-;;
-;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
-;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
-(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 14))
-(setq frame-title-format "")
-;; (setq doom-font (font-spec :family "霞鹜文楷等宽" :size 14))
+  (setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 14))
+  ;; (setq doom-font (font-spec :family "霞鹜文楷等宽" :size 14))
+  (setq frame-title-format "")
 
-;; 设置 ace-window 超大字体
-(custom-set-faces!
-  '(aw-leading-char-face
-    :foreground "red"
-    :weight bold
-    :height 400))
+  ;; 设置 ace-window 超大字体
+  (custom-set-faces!
+    '(aw-leading-char-face
+      :foreground "red"
+      :weight bold
+      :height 400))
 
-;;像素级别平滑滚动
-(pixel-scroll-precision-mode 1)
+  ;; 像素级别平滑滚动
+  (pixel-scroll-precision-mode 1)
 
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (add-to-list 'default-frame-alist '(fullscreen . maximized)))
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
 ;; refresh your font settings. If Emacs still can't find your font, it likely
@@ -117,10 +105,14 @@
 (map! "s-p" #'switch-to-buffer)
 
 
-;; 放大 window-select 的提示字体
+;; 放大 window-select 的提示字体（GUI 下使用像素倍数，TUI 下使用固定绝对高度）
 (after! window-select
-  (set-face-attribute 'doom-window-select-face nil :height 3.0)
-  (set-face-attribute 'doom-window-select-number-face nil :height 3))
+  (if (display-graphic-p)
+      (progn
+        (set-face-attribute 'doom-window-select-face nil :height 3.0)
+        (set-face-attribute 'doom-window-select-number-face nil :height 3))
+    (set-face-attribute 'doom-window-select-face nil :height 200)
+    (set-face-attribute 'doom-window-select-number-face nil :height 200)))
 
 
 (after! centaur-tabs

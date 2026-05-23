@@ -1,9 +1,9 @@
 ;;; my/org/+pretty.el -*- lexical-binding: t; -*-
 
-;; 使用 valign 对齐表格（org 和 markdown）
+;; 使用 valign 对齐表格（org 和 markdown），仅 GUI 下启用（依赖像素对齐）
 (use-package! valign
-  :hook ((org-mode . valign-mode)
-         (markdown-mode . valign-mode))
+  :hook ((org-mode . (lambda () (when (display-graphic-p) (valign-mode 1))))
+         (markdown-mode . (lambda () (when (display-graphic-p) (valign-mode 1)))))
   :config
   (setq org-highlight-latex-and-related '(native script entities)
         org-pretty-entities t

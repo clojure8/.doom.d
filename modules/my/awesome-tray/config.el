@@ -28,8 +28,10 @@
   :hook (doom-after-init . awesome-tray-mode)
   :config
   ;; Configuration for awesome-tray appearance
-  (setq awesome-tray-mode-line-active-color "#5B6268")
-  (setq awesome-tray-mode-line-height 0.1) ; Set height to minimal
+  (setq awesome-tray-mode-line-active-color
+        (if (display-graphic-p) "#5B6268" "color-241"))
+  (when (display-graphic-p)
+    (setq awesome-tray-mode-line-height 0.1))
   (setq awesome-tray-active-modules
         '("evil" "buffer-name" "file-path" "git" "mode-name"))
   (add-hook! 'doom-load-theme-hook #'awesome-tray-mode #'hide-mode-line-mode)

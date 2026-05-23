@@ -4,13 +4,11 @@
 (use-package! inheritenv)
 
 ;; 配置 Monet 和 Claude-Code
-(use-package! monet
-  :config
-  (monet-mode 1))
+(use-package! monet :config (monet-mode 1))
 
 (use-package! claude-code
   :config
-  (setq claude-code-terminal-backend 'vterm)
+  (setq claude-code-terminal-backend (if (display-graphic-p) 'vterm 'eat))
   (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
   (claude-code-mode))
 

@@ -369,10 +369,9 @@
   ;; 启用 dap-mode
   (dap-mode 1)
   (dap-ui-mode 1)
-  (dap-tooltip-mode 1)
-  
-  ;; 启用鼠标悬停支持
-  (tooltip-mode 1)
+  (when (display-graphic-p)
+    (dap-tooltip-mode 1)
+    (tooltip-mode 1))
   
   ;; 注册 Go 调试适配器
   (require 'dap-dlv-go)
