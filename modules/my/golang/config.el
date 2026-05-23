@@ -14,7 +14,9 @@
 (defun +go/run-current-file ()
   "运行当前 Go 文件"
   (interactive)
-  (compile (format "go run %s" (buffer-file-name))))
+  (if (buffer-file-name)
+      (compile (format "go run %s" (shell-quote-argument (buffer-file-name))))
+    (user-error "当前缓冲区没有关联文件")))
 
 (defun +go/build-project ()
   "构建当前 Go 项目"
@@ -29,7 +31,9 @@
 (defun +go/test-current-file ()
   "测试当前文件"
   (interactive)
-  (compile (format "go test -v %s" (file-name-directory (buffer-file-name)))))
+  (if (buffer-file-name)
+      (compile (format "go test -v %s" (shell-quote-argument (file-name-directory (buffer-file-name)))))
+    (user-error "当前缓冲区没有关联文件")))
 
 (defun +go/benchmark-project ()
   "运行项目基准测试"
@@ -55,18 +59,18 @@
   "获取 Go 包"
   (interactive)
   (let ((package (read-string "包名: ")))
-    (compile (format "go get %s" package))))
+    (compile (format "go get %s" (shell-quote-argument package)))))
 
 (defun +go/install-tools ()
   "安装常用的 Go 开发工具"
   (interactive)
-  (let ((tools '("golang.org/x/tools/cmd/goimports@latest"
-                 "golang.org/x/tools/gopls@latest"
-                 "github.com/go-delve/delve/cmd/dlv@latest"
-                 "honnef.co/go/tools/cmd/staticcheck@latest"
-                 "github.com/golangci/golangci-lint/cmd/golangci-lint@latest")))
-    (dolist (tool tools)
-      (compile (format "go install %s" tool)))))
+  (let* ((tools '("golang.org/x/tools/cmd/goimports@latest"
+                  "golang.org/x/tools/gopls@latest"
+                  "github.com/go-delve/delve/cmd/dlv@latest"
+                  "honnef.co/go/tools/cmd/staticcheck@latest"
+                  "github.com/golangci/golangci-lint/cmd/golangci-lint@latest"))
+         (cmd (mapconcat (lambda (t) (format "go install %s" t)) tools " && ")))
+    (compile cmd)))
 
 (defun +go/generate ()
   "运行 go generate"
@@ -82,8 +86,9 @@
   "显示光标处符号的文档"
   (interactive)
   (let ((symbol (thing-at-point 'symbol)))
-    (when symbol
-      (compile (format "go doc %s" symbol)))))
+    (if symbol
+        (compile (format "go doc %s" (shell-quote-argument symbol)))
+      (user-error "光标处没有符号"))))
 
 (defun +go/list-packages ()
   "列出项目中的所有包"
@@ -99,7 +104,7 @@
   "解释为什么需要某个包"
   (interactive)
   (let ((package (read-string "包名: ")))
-    (compile (format "go mod why %s" package))))
+    (compile (format "go mod why %s" (shell-quote-argument package)))))
 
 (defun +go/coverage ()
   "运行测试覆盖率分析"
@@ -107,20 +112,20 @@
   (compile "go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out"))
 
 (defun +go/profile-cpu ()
-  "CPU 性能分析"
+  "CPU 性能分析，生成后用 pprof web UI 展示（http://localhost:8080）"
   (interactive)
-  (compile "go test -cpuprofile=cpu.prof -bench=. && go tool pprof cpu.prof"))
+  (compile "go test -cpuprofile=cpu.prof -bench=. ./... && go tool pprof -http=:8080 cpu.prof"))
 
 (defun +go/profile-mem ()
-  "内存性能分析"
+  "内存性能分析，生成后用 pprof web UI 展示（http://localhost:8080）"
   (interactive)
-  (compile "go test -memprofile=mem.prof -bench=. && go tool pprof mem.prof"))
+  (compile "go test -memprofile=mem.prof -bench=. ./... && go tool pprof -http=:8080 mem.prof"))
 
 (defun +go/init-module ()
   "初始化 Go 模块"
   (interactive)
   (let ((module-name (read-string "模块名: ")))
-    (compile (format "go mod init %s" module-name))))
+    (compile (format "go mod init %s" (shell-quote-argument module-name)))))
 
 (defun +go/add-build-tags ()
   "添加构建标签到当前文件"
@@ -293,35 +298,29 @@
 (use-package! go-mode
   :mode "\\.go\\'"
   :config
-  ;; 设置 Go 相关的环境变量和路径
   (setq gofmt-command "goimports")
   (setq go-fontify-function-calls nil)
-  
-  ;; 在保存时自动格式化
-  (add-hook 'before-save-hook 'gofmt-before-save)
-  
-  ;; 设置缩进
-  (setq tab-width 4)
-  (setq indent-tabs-mode t)
-  
-  ;; 禁用 Doom 默认的 LSP 配置，使用 lsp-bridge
   (setq +go-lsp-clients nil)
-  
-  ;; Go 模式钩子
+
   (add-hook 'go-mode-hook
             (lambda ()
-              ;; 设置编译命令
-              (setq compile-command "go build -v && go test -v && go vet")
+              ;; 缩进：buffer-local，不污染其他语言
+              (setq-local tab-width 4)
+              (setq-local indent-tabs-mode t)
+              ;; 保存时格式化：buffer-local
+              (add-hook 'before-save-hook #'gofmt-before-save nil t)
+              ;; 编译命令
+              (setq-local compile-command "go build -v && go test -v && go vet")
               ;; 启用 lsp-bridge（如果全局未启用）
               (unless (bound-and-true-p lsp-bridge-mode)
                 (lsp-bridge-mode 1))
               ;; 启用 eldoc
               (go-eldoc-setup)
-              ;; 设置 GOPATH 和 GOROOT（如果需要）
+              ;; 将 GOPATH/GOROOT bin 加入 exec-path，用 add-to-list 防止重复累积
               (when (getenv "GOPATH")
-                (setq exec-path (cons (concat (getenv "GOPATH") "/bin") exec-path)))
+                (add-to-list 'exec-path (concat (getenv "GOPATH") "/bin")))
               (when (getenv "GOROOT")
-                (setq exec-path (cons (concat (getenv "GOROOT") "/bin") exec-path))))))
+                (add-to-list 'exec-path (concat (getenv "GOROOT") "/bin"))))))
 
 (use-package! go-tag
   :after go-mode
@@ -426,11 +425,7 @@
          :remotePath ""
          :host "localhost"
          :port 2345))
-  ;; 设置断点样式
-  (setq dap-breakpoint-condition-face 'dap-breakpoint-condition-face)
-  
-  ;; 禁用默认的 dap-ui 控制面板弹窗
-  (setq dap-ui-controls-mode nil))
+  )
 
 ;; 自定义 DAP 调试布局
 (defvar +go/dap-debug-window-config nil
@@ -440,48 +435,8 @@
   "保存 DAP UI 窗口引用")
 
 (defun +go/dap-setup-debug-layout (&optional session)
-  "设置 Go DAP 调试布局 - 使用 display-buffer-alist 控制缓冲区位置"
-  ;; 保存当前窗口配置
+  "设置 Go DAP 调试布局，位置由 dap-ui-buffer-configurations 控制。"
   (setq +go/dap-debug-window-config (current-window-configuration))
-  
-  ;; 获取当前 session 的名称
-  (when session
-    (let ((session-name (dap--debug-session-name session)))
-      ;; 配置 DAP UI 缓冲区的显示规则
-      (setq-local display-buffer-alist
-                  `(("\\*dap-ui-locals\\*"
-                     (display-buffer-in-side-window)
-                     (side . right)
-                     (slot . 0)
-                     (window-width . 60)
-                     (window-parameters . ((no-delete-other-windows . t))))
-                    ("\\*dap-ui-breakpoints\\*"
-                     (display-buffer-in-side-window)
-                     (side . right)
-                     (slot . 1)
-                     (window-width . 60)
-                     (window-parameters . ((no-delete-other-windows . t))))
-                    ("\\*dap-ui-expressions\\*"
-                     (display-buffer-in-side-window)
-                     (side . right)
-                     (slot . 2)
-                     (window-width . 60)
-                     (window-parameters . ((no-delete-other-windows . t))))
-                    ("\\*dap-ui-repl\\*"
-                     (display-buffer-in-side-window)
-                     (side . bottom)
-                     (slot . 0)
-                     (window-height . 12)
-                     (window-parameters . ((no-delete-other-windows . t))))
-                    ;; 根据当前 session 名称动态匹配 log buffer
-                    (,(format "^ \\* %s log\\*$" (regexp-quote session-name))
-                     (display-buffer-in-side-window)
-                     (side . bottom)
-                     (slot . 1)
-                     (window-height . 12)
-                     (window-parameters . ((no-delete-other-windows . t))))))))
-  
-  ;; 调用 dap-ui 函数来创建缓冲区，它们会按照 display-buffer-alist 规则显示
   (dap-ui-locals)
   (dap-ui-breakpoints)
   (dap-ui-expressions)
@@ -489,7 +444,6 @@
 
 (defun my/dap-show-debug-log (session)
   (when-let ((buf (dap--debug-session-server-log-buffer session)))
-    (message "xxxxxxxxxx")
     (display-buffer
      buf
      '((display-buffer-in-side-window)
@@ -501,9 +455,6 @@
 
 (defun +go/dap-cleanup-debug-layout (&optional session)
   "清理调试布局，恢复之前的窗口配置"
-  ;; 恢复 display-buffer-alist
-  (setq-local display-buffer-alist nil)
-  
   ;; 关闭所有 side windows
   (when (window-with-parameter 'window-side)
     (window-toggle-side-windows))
