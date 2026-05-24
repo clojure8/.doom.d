@@ -314,8 +314,7 @@
               ;; 启用 lsp-bridge（如果全局未启用）
               (unless (bound-and-true-p lsp-bridge-mode)
                 (lsp-bridge-mode 1))
-              ;; 启用 eldoc
-              (go-eldoc-setup)
+              ;; eldoc 由 lsp-bridge + gopls 提供，无需 go-eldoc（依赖已废弃的 gocode）
               ;; 将 GOPATH/GOROOT bin 加入 exec-path，用 add-to-list 防止重复累积
               (when (getenv "GOPATH")
                 (add-to-list 'exec-path (concat (getenv "GOPATH") "/bin")))
@@ -347,8 +346,7 @@
 (use-package! go-projectile
   :after (go-mode projectile))
 
-(use-package! go-eldoc
-  :after go-mode)
+;; go-eldoc 已移除：依赖废弃的 gocode，eldoc 由 lsp-bridge + gopls 提供
 
 (use-package! go-guru
   :after go-mode

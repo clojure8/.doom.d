@@ -1,11 +1,18 @@
 ;;; my/lsp-bridge/config.el -*- lexical-binding: t; -*-
 
 (use-package! lsp-bridge
+  :init
+  ;; 使用 pyenv 的绝对路径，避免 Emacs GUI 启动时找不到正确的 python3
+  (setq lsp-bridge-python-command "/Users/mac/.pyenv/versions/3.12.2/bin/python3")
   :config
-  (global-lsp-bridge-mode))
+  ;; TUI 下 acm 依赖 child-frame，终端不支持，只在 GUI 启用
+  (when (display-graphic-p)
+    (global-lsp-bridge-mode)))
 
-;; TUI 补全前端：acm-terminal 用 popon 替换 acm 的 child-frame 渲染
-;; 在 daemon 模式下，acm-terminal 在每次渲染时检查当前 frame 的 display-graphic-p，
-;; GUI frame 继续使用 child-frame，TUI frame 自动切换到 popon，无需手动切换
-(use-package! acm-terminal
-  :after acm)
+;; daemon 模式：Emacs 以服务启动时 display-graphic-p 为 nil，
+;; 等 GUI frame 创建后再启用
+(add-hook 'server-after-make-frame-hook
+          (lambda ()
+            (when (and (display-graphic-p)
+                       (not (bound-and-true-p global-lsp-bridge-mode)))
+              (global-lsp-bridge-mode))))

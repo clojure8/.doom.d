@@ -76,7 +76,8 @@
               (progn
                 (window-state-put state (frame-root-window) 'safe)
                 (message "Layout '%s' loaded" name))
-            (error
+            ;; user-error covers "No more buttons" from dashboard re-render
+            ((error user-error)
              (message "Failed to restore layout '%s': %s" name (error-message-string err)))))
       (message "Layout '%s' not found" name))))
 
@@ -214,7 +215,10 @@
 
 ;; Initialize on startup
 (add-hook 'doom-first-input-hook #'my/load-all-layouts)
-(add-hook 'doom-first-input-hook #'my/restore-last-layout)
+;; 延迟 0.8s 再恢复布局，避免与 dashboard 的 forward-button 初始化竞争
+;; （window-state-put 会触发 dashboard 重绘，此时按钮尚未渲染，导致 "No more buttons"）
+(add-hook 'doom-first-input-hook
+          (lambda () (run-with-idle-timer 0.8 nil #'my/restore-last-layout)))
 (add-hook 'doom-first-input-hook #'my/enable-auto-save-layout)
 (add-hook 'kill-emacs-hook #'my/auto-save-layout)
 

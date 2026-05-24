@@ -46,43 +46,49 @@
         org-link-descriptive t
         org-pretty-entities-include-sub-superscripts t)
 
-  ;; 类 Typora 居中阅读
+  ;; 类 Typora 居中阅读：只对 org buffer 有效，其他 buffer 强制边距为 0
   (defvar my/org-body-width-ratio (/ 2.0 3)
     "Ratio of screen width used for org body text.")
 
-  (defun my/org-margin-width ()
-    "Calculate margin char width for centering at 2/3 screen."
-    (when (display-graphic-p)
-      (let* ((char-width (frame-char-width))
-             (frame-width (frame-pixel-width))
-             (body-pixels (truncate (* frame-width my/org-body-width-ratio)))
-             (margin-pixels (/ (- frame-width body-pixels) 2)))
-        (/ margin-pixels char-width))))
+  (defun my/org-calc-margin (win)
+    "Return margin char count for WIN, or 0 if non-GUI."
+    (if (display-graphic-p)
+        (let* ((frame      (window-frame win))
+               (char-width (frame-char-width frame))
+               (frame-px   (frame-pixel-width frame))
+               (body-px    (truncate (* frame-px my/org-body-width-ratio)))
+               (margin-px  (/ (- frame-px body-px) 2)))
+          (max 0 (/ margin-px char-width)))
+      0))
 
-  (defun my/org-center-buffer ()
-    "Set window margins to center buffer content."
-    (when (display-graphic-p)
-      (let ((margin (my/org-margin-width)))
-        (set-window-margins (selected-window) margin margin))))
+  (defun my/enforce-window-margins (win)
+    "Org buffer → centered margins; everything else → zero margins."
+    (when (window-live-p win)
+      (if (with-current-buffer (window-buffer win)
+            (derived-mode-p 'org-mode))
+          (set-window-margins win (my/org-calc-margin win) (my/org-calc-margin win))
+        (set-window-margins win 0 0))))
 
-  (defun my/org-restore-centering ()
-    "Restore centered margins for all org windows."
-    (dolist (win (get-buffer-window-list nil nil t))
-      (with-selected-window win (my/org-center-buffer))))
+  ;; buffer 在窗口中切换时立即更新边距
+  (add-hook 'window-buffer-change-functions #'my/enforce-window-margins)
 
-  ;; 光标在表格上时自动取消居中（全宽显示表格），离开时恢复居中
+  ;; 窗口大小变化时重新计算（处理 frame resize / 分栏等）
+  (add-hook 'window-size-change-functions
+            (lambda (frame)
+              (dolist (win (window-list frame))
+                (my/enforce-window-margins win))))
+
+  ;; org 表格行临时取消边距（全宽显示），离开恢复
   (defun my/org-table-adjust-margin ()
-    "Remove margins when on a table line, restore otherwise."
-    (when (and (derived-mode-p 'org-mode) (display-graphic-p))
-      (if (org-at-table-p)
-          (set-window-margins (selected-window) 0 0)
-        (my/org-center-buffer))))
+    (when (derived-mode-p 'org-mode)
+      (let ((win (selected-window)))
+        (if (org-at-table-p)
+            (set-window-margins win 0 0)
+          (my/enforce-window-margins win)))))
 
   (add-hook 'org-mode-hook
             (lambda ()
               (display-line-numbers-mode 0)
               (setq-local truncate-lines t)
-              (my/org-center-buffer)
-              (add-hook 'post-command-hook #'my/org-table-adjust-margin nil t)
-              (add-hook 'window-configuration-change-hook
-                        #'my/org-restore-centering nil t))))
+              (my/enforce-window-margins (selected-window))
+              (add-hook 'post-command-hook #'my/org-table-adjust-margin nil t))))

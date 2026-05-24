@@ -9,7 +9,7 @@
 (package! gorepl-mode)
 (package! go-playground)
 (package! go-projectile)
-(package! go-eldoc)
+(package! go-eldoc :disable t)  ; 依赖废弃的 gocode，由 lsp-bridge + gopls 替代
 (package! go-guru)
 (package! go-rename)
 (package! transient)  ; transient 菜单支持
