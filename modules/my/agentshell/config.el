@@ -6,4 +6,5 @@
 
 (use-package! agent-recall
   :config
-  (setq agent-recall-search-paths '("~/projects")))
+  (setq agent-recall-search-paths '("~/projects"))
+  (global-agent-recall-transcript-mode))
