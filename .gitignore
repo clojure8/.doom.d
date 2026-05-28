@@ -14,3 +14,4 @@ fly*
 ./.agent-shell/
 /.agent-shell/
 /layouts/
+.omc/

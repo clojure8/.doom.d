@@ -6,12 +6,6 @@
 ;; 配置 Monet 和 Claude-Code
 (use-package! monet :config (monet-mode 1))
 
-(use-package! claude-code
-  :config
-  (setq claude-code-terminal-backend (if (display-graphic-p) 'vterm 'eat))
-  (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
-  (claude-code-mode))
-
 (use-package! claude-code-ide
   :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
   :config

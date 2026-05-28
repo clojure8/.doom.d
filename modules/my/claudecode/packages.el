@@ -16,12 +16,5 @@
            :branch "main" ; 需根据实际情况确认分支名
            :files ("*.el")))
 
-;; 声明 claude-code (Git 仓库依赖)
-(package! claude-code
-  :recipe (:host github
-           :repo "stevemolitor/claude-code.el"
-           :branch "main"
-           :files ("*")))
-
 (package! claude-code-ide
   :recipe (:host github :repo "manzaltu/claude-code-ide.el"))

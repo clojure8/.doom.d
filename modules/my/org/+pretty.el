@@ -47,7 +47,7 @@
         org-pretty-entities-include-sub-superscripts t)
 
   ;; 类 Typora 居中阅读：只对 org buffer 有效，其他 buffer 强制边距为 0
-  (defvar my/org-body-width-ratio (/ 2.0 3)
+  (defvar my/org-body-width-ratio (/ 7.0 9)
     "Ratio of screen width used for org body text.")
 
   (defun my/org-calc-margin (win)

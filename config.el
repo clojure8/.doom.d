@@ -28,6 +28,65 @@
 ;; 文件大小限制优化
 (setq large-file-warning-threshold (* 500 1000 1000))  ; 500MB
 
+;; 全局缩进：tab = 4 空格
+;; tab-width 只影响真实 \t 字符的显示宽度；按 TAB 键的实际缩进量由各 mode 自己的
+;; *-offset / *-indent-level 变量决定，所以这里一并设默认值。
+(setq-default tab-width 4
+              indent-tabs-mode nil
+              evil-shift-width 4
+              standard-indent 4
+              ;; C / C++ / Java / Objective-C / Awk 等 cc-mode 家族
+              c-basic-offset 4
+              ;; Shell
+              sh-basic-offset 4
+              sh-indentation 4
+              ;; JavaScript / TypeScript / JSON
+              js-indent-level 4
+              js-switch-indent-offset 4
+              js2-basic-offset 4
+              typescript-indent-level 4
+              json-reformat:indent-width 4
+              ;; Python
+              python-indent-offset 4
+              go-ts-mode-indent-offset 4
+              ;; CSS / SCSS / Less
+              css-indent-offset 4
+              ;; web-mode
+              web-mode-markup-indent-offset 4
+              web-mode-css-indent-offset 4
+              web-mode-code-indent-offset 4
+              web-mode-attr-indent-offset 4
+              ;; Lua / Rust / Ruby
+              lua-indent-level 4
+              rust-indent-offset 4
+              ruby-indent-level 4
+              ;; XML / SGML / HTML
+              nxml-child-indent 4
+              nxml-attribute-indent 4
+              sgml-basic-offset 4
+              ;; tree-sitter *-ts-mode 各自独立的 offset
+              c-ts-mode-indent-offset 4
+              c-ts-common-indent-offset 4
+              typescript-ts-mode-indent-offset 4
+              tsx-ts-mode-indent-offset 4
+              rust-ts-mode-indent-offset 4
+              ruby-ts-mode-indent-offset 4
+              lua-ts-mode-indent-offset 4
+              toml-ts-mode-indent-offset 4
+              json-ts-mode-indent-offset 4
+              yaml-ts-mode-indent-offset 4
+              dockerfile-ts-mode-indent-offset 4
+              cmake-ts-mode-indent-offset 4
+              heex-ts-mode-indent-offset 4
+              elixir-ts-mode-indent-offset 4
+              nix-ts-mode-indent-offset 4
+              php-ts-mode-indent-offset 4
+              ;; go-ts-mode-indent-offset 在下方 go-ts-mode-hook 里另设
+              ;; （Go 用真实 tab，indent-tabs-mode t）。
+              ;; bash-ts-mode / js-ts-mode / python-ts-mode 复用上面的
+              ;; sh-basic-offset / js-indent-level / python-indent-offset
+              )
+
 
 ;; 快速滚动
 (setq fast-but-imprecise-scrolling t)
@@ -63,7 +122,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-dark+)
+(setq doom-theme 'doom-xcode)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -122,7 +181,6 @@
     (set-face-attribute 'doom-window-select-face nil :height 200)
     (set-face-attribute 'doom-window-select-number-face nil :height 200)))
 
-
 (after! centaur-tabs
   (map! :leader
         :prefix "t"
@@ -166,7 +224,6 @@
        :utils "open"))))
 
 ;; 范围高亮
-(show-paren-mode 1)
 (setq show-paren-style 'expression
       show-paren-delay 0
       show-paren-when-point-inside-paren t)
