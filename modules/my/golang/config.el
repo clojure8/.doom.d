@@ -1,13 +1,22 @@
 ;;; my/golang/config.el -*- lexical-binding: t; -*-
 
-;; Go：覆盖默认 tab-width 8（go-ts-mode 和 go-mode 都覆盖）
-(after! go-mode
-  (setq-hook! 'go-mode-hook
-    indent-tabs-mode t))
+;; 共享 buffer 初始化，go-mode 和 go-ts-mode 均适用
+(defun +go/setup-buffer ()
+  (setq-local tab-width 4)
+  (setq-local indent-tabs-mode t)
+  (add-hook 'before-save-hook #'gofmt-before-save nil t)
+  (setq-local compile-command "go build -v && go test -v && go vet")
+  (unless (bound-and-true-p lsp-bridge-mode)
+    (lsp-bridge-mode 1))
+  (when (getenv "GOPATH")
+    (add-to-list 'exec-path (concat (getenv "GOPATH") "/bin")))
+  (when (getenv "GOROOT")
+    (add-to-list 'exec-path (concat (getenv "GOROOT") "/bin"))))
+
 (after! go-ts-mode
-  (setq-hook! 'go-ts-mode-hook
-    indent-tabs-mode t
-    go-ts-mode-indent-offset 4))
+  ;; go-ts-mode 专属缩进偏移
+  (setq-hook! 'go-ts-mode-hook go-ts-mode-indent-offset 4)
+  (add-hook 'go-ts-mode-hook #'+go/setup-buffer))
 
 ;; 自定义 Go 项目管理函数
 (defun +go/run-main ()
@@ -130,16 +139,16 @@
   (interactive)
   (compile "go test -memprofile=mem.prof -bench=. ./... && go tool pprof -http=:8080 mem.prof"))
 
-(defun +go/init-module ()
+(defun +go/init-module (&optional module-name)
   "初始化 Go 模块"
   (interactive)
-  (let ((module-name (read-string "模块名: ")))
+  (let ((module-name (or module-name (read-string "模块名: "))))
     (compile (format "go mod init %s" (shell-quote-argument module-name)))))
 
 (defun +go/add-build-tags ()
-  "添加构建标签到当前文件"
+  "添加构建标签到当前文件，多个标签用 && 或 || 连接（如 linux && amd64）"
   (interactive)
-  (let ((tags (read-string "构建标签 (用空格分隔): ")))
+  (let ((tags (read-string "构建标签 (如: linux && amd64): ")))
     (save-excursion
       (goto-char (point-min))
       (if (looking-at "^//go:build")
@@ -224,70 +233,10 @@
                      :host host
                      :port (string-to-number port)))))
 
-(defun +go/toggle-breakpoint ()
-  "切换断点"
-  (interactive)
-  (dap-breakpoint-toggle))
-
-(defun +go/clear-all-breakpoints ()
-  "清除所有断点"
-  (interactive)
-  (dap-breakpoint-delete-all))
-
-(defun +go/debug-continue ()
-  "继续执行"
-  (interactive)
-  (dap-continue))
-
-(defun +go/debug-step-over ()
-  "单步跳过"
-  (interactive)
-  (dap-next))
-
-(defun +go/debug-step-into ()
-  "单步进入"
-  (interactive)
-  (dap-step-in))
-
-(defun +go/debug-step-out ()
-  "单步跳出"
-  (interactive)
-  (dap-step-out))
-
-(defun +go/debug-eval ()
-  "求值表达式"
-  (interactive)
-  (call-interactively #'dap-eval))
-
-(defun +go/debug-locals ()
-  "显示局部变量"
-  (interactive)
-  (dap-ui-locals))
-
-(defun +go/debug-sessions ()
-  "显示调试会话"
-  (interactive)
-  (dap-ui-sessions))
-
-(defun +go/debug-restart ()
-  "重启调试"
-  (interactive)
-  (dap-debug-restart))
-
-(defun +go/debug-stop ()
-  "停止调试"
-  (interactive)
-  (dap-disconnect))
-
 (defun +go/debug-eval-region ()
   "求值选中区域"
   (interactive)
   (dap-eval-region (region-beginning) (region-end)))
-
-(defun +go/debug-breakpoints ()
-  "显示断点列表"
-  (interactive)
-  (dap-ui-breakpoints))
 
 (defun +go/start-dlv-server ()
   "启动 dlv 调试服务器"
@@ -311,24 +260,7 @@
   (setq go-fontify-function-calls nil)
   (setq +go-lsp-clients nil)
 
-  (add-hook 'go-mode-hook
-            (lambda ()
-              ;; 缩进：buffer-local，不污染其他语言
-              (setq-local tab-width 4)
-              (setq-local indent-tabs-mode t)
-              ;; 保存时格式化：buffer-local
-              (add-hook 'before-save-hook #'gofmt-before-save nil t)
-              ;; 编译命令
-              (setq-local compile-command "go build -v && go test -v && go vet")
-              ;; 启用 lsp-bridge（如果全局未启用）
-              (unless (bound-and-true-p lsp-bridge-mode)
-                (lsp-bridge-mode 1))
-              ;; eldoc 由 lsp-bridge + gopls 提供，无需 go-eldoc（依赖已废弃的 gocode）
-              ;; 将 GOPATH/GOROOT bin 加入 exec-path，用 add-to-list 防止重复累积
-              (when (getenv "GOPATH")
-                (add-to-list 'exec-path (concat (getenv "GOPATH") "/bin")))
-              (when (getenv "GOROOT")
-                (add-to-list 'exec-path (concat (getenv "GOROOT") "/bin"))))))
+  (add-hook 'go-mode-hook #'+go/setup-buffer))
 
 (use-package! go-tag
   :after go-mode
@@ -360,7 +292,8 @@
 (use-package! go-guru
   :after go-mode
   :config
-  (add-hook 'go-mode-hook #'go-guru-hl-identifier-mode))
+  (add-hook 'go-mode-hook #'go-guru-hl-identifier-mode)
+  (add-hook 'go-ts-mode-hook #'go-guru-hl-identifier-mode))
 
 (use-package! go-rename
   :after go-mode)
@@ -443,13 +376,14 @@
 
 (defun +go/dap-setup-debug-layout (&optional session)
   "设置 Go DAP 调试布局，位置由 dap-ui-buffer-configurations 控制。"
+  (interactive)
   (setq +go/dap-debug-window-config (current-window-configuration))
   (dap-ui-locals)
   (dap-ui-breakpoints)
   (dap-ui-expressions)
   (dap-ui-repl))
 
-(defun my/dap-show-debug-log (session)
+(defun +go/dap-show-debug-log (session)
   (when-let ((buf (dap--debug-session-server-log-buffer session)))
     (display-buffer
      buf
@@ -458,10 +392,9 @@
        (slot . 1)
        (window-height . 12)))))
 
-(add-hook 'dap-session-created-hook #'my/dap-show-debug-log)
-
 (defun +go/dap-cleanup-debug-layout (&optional session)
   "清理调试布局，恢复之前的窗口配置"
+  (interactive)
   ;; 关闭所有 side windows
   (when (window-with-parameter 'window-side)
     (window-toggle-side-windows))
@@ -486,6 +419,7 @@
 
 ;; 在调试会话启动时设置布局
 (after! dap-mode
+  (add-hook 'dap-session-created-hook #'+go/dap-show-debug-log)
   (add-hook 'dap-session-created-hook #'+go/dap-setup-debug-layout)
   
   ;; 在调试停止时显示 hydra
@@ -498,10 +432,10 @@
   ;; 在调试会话断开连接时也清理布局
   (add-hook 'dap-disconnected-hook #'+go/dap-cleanup-debug-layout))
 
-;; 设置 Go 相关的键绑定
+;; 设置 Go 相关的键绑定（go-mode 和 go-ts-mode 共用）
 (map! :after go-mode
       :localleader
-      :map go-mode-map
+      :map (go-mode-map go-ts-mode-map)
       ;; 基础操作
       (:prefix ("g" . "go")
                "a" #'go-tag-add
@@ -577,26 +511,31 @@
                "f" #'+go/debug-current-file
                "a" #'+go/debug-attach
                "r" #'+go/debug-remote
-               "b" #'+go/toggle-breakpoint
-               "B" #'+go/clear-all-breakpoints
-               "c" #'+go/debug-continue
-               "n" #'+go/debug-step-over
-               "i" #'+go/debug-step-into
-               "o" #'+go/debug-step-out
-               "R" #'+go/debug-restart
-               "s" #'+go/debug-stop
-               "e" #'+go/debug-eval
+               "b" #'dap-breakpoint-toggle
+               "B" #'dap-breakpoint-delete-all
+               "c" #'dap-continue
+               "n" #'dap-next
+               "i" #'dap-step-in
+               "o" #'dap-step-out
+               "R" #'dap-debug-restart
+               "s" #'dap-disconnect
+               "e" #'dap-eval
                "E" #'+go/debug-eval-region
-               "l" #'+go/debug-locals
-               "S" #'+go/debug-sessions
-               "L" #'+go/debug-breakpoints
-               "w" #'+go/dap-setup-debug-layout    ; 重新设置调试布局
-               "W" #'+go/dap-cleanup-debug-layout)  ; 清理调试布局
+               "l" #'dap-ui-locals
+               "S" #'dap-ui-sessions
+               "L" #'dap-ui-breakpoints
+               "w" #'+go/dap-setup-debug-layout
+               "W" #'+go/dap-cleanup-debug-layout)
 
       ;; dlv 服务器
       (:prefix ("D" . "dlv-server")
                "s" #'+go/start-dlv-server
-               "t" #'+go/dlv-test-server))
+               "t" #'+go/dlv-test-server)
+
+      ;; 新建项目模板
+      (:prefix ("n" . "new")
+               "c" #'+go/new-cli-project
+               "w" #'+go/new-web-project))
 
 ;; 设置 Go 工具路径
 (after! exec-path-from-shell
@@ -641,14 +580,6 @@
         (with-temp-file "cmd/server/main.go"
           (insert "package main\n\nimport (\n\t\"log\"\n\t\"net/http\"\n)\n\nfunc main() {\n\thttp.HandleFunc(\"/\", func(w http.ResponseWriter, r *http.Request) {\n\t\tw.Write([]byte(\"Hello, World!\"))\n\t})\n\n\tlog.Println(\"Server starting on :8080\")\n\tlog.Fatal(http.ListenAndServe(\":8080\", nil))\n}\n"))))))
 
-;; 添加项目模板到键绑定
-(map! :after go-mode
-      :localleader
-      :map go-mode-map
-      (:prefix ("n" . "new")
-               "c" #'+go/new-cli-project
-               "w" #'+go/new-web-project))
-
 ;; Transient 菜单定义
 (use-package! transient
   :after go-mode
@@ -687,18 +618,18 @@
       ("dd" "调试 main       " +go/debug-main)
       ("dt" "调试测试        " +go/debug-test)
       ("df" "调试当前文件    " +go/debug-current-file)
-      ("db" "切换断点        " +go/toggle-breakpoint)
-      ("dc" "继续执行        " +go/debug-continue)
-      ("ds" "停止调试        " +go/debug-stop)
+      ("db" "切换断点        " dap-breakpoint-toggle)
+      ("dc" "继续执行        " dap-continue)
+      ("ds" "停止调试        " dap-disconnect)
       ("dw" "设置调试布局    " +go/dap-setup-debug-layout)
       ("dW" "清理调试布局    " +go/dap-cleanup-debug-layout)]
      ["调试步进 & 其他"
-      ("dn" "单步跳过        " +go/debug-step-over)
-      ("di" "单步进入        " +go/debug-step-into)
-      ("do" "单步跳出        " +go/debug-step-out)
-      ("de" "表达式求值      " +go/debug-eval)
-      ("dl" "查看局部变量    " +go/debug-locals)
-      ("dS" "调试会话        " +go/debug-sessions)
+      ("dn" "单步跳过        " dap-next)
+      ("di" "单步进入        " dap-step-in)
+      ("do" "单步跳出        " dap-step-out)
+      ("de" "表达式求值      " dap-eval)
+      ("dl" "查看局部变量    " dap-ui-locals)
+      ("dS" "调试会话        " dap-ui-sessions)
       ("bc" "清理构建        " +go/clean)
       ("pm" "内存分析        " +go/profile-mem)
       ("nw" "新建 Web 项目   " +go/new-web-project)
@@ -708,5 +639,5 @@
   ;; 添加 transient 菜单键绑定
   (map! :after go-mode
         :localleader
-        :map go-mode-map
+        :map (go-mode-map go-ts-mode-map)
         "m" #'+go/transient-menu))
