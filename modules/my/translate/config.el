@@ -34,6 +34,10 @@
       (setq google-translate-default-source-language source
             google-translate-default-target-language target))))
 
+;; 翻译结果以临时弹出窗口显示，按 q 或 ESC 退出
+(set-popup-rule! "^\\*Google Translate\\*"
+  :side 'bottom :size 0.3 :select t :quit t :ttl nil)
+
 ;; 快捷键绑定
 (map! :leader
       (:prefix ("T" . "translate")

@@ -9,4 +9,6 @@
 (use-package! claude-code-ide
   :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
   :config
-  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
+  (claude-code-ide-emacs-tools-setup) ; Optionally enable Emacs MCP tools
+  (map! :leader
+        :desc "Claude Code IDE menu" "c c" #'claude-code-ide-menu))

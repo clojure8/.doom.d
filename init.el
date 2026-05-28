@@ -198,12 +198,12 @@
        (default +bindings +smartparens)
 
        :my
-       ;;claudecode
+       ;; claudecode
        agentshell
        lsp-bridge
        golang
        gptel
-       awesome-tray
+       ;; awesome-tray
        translate
        ;; jinx
        layout
