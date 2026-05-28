@@ -56,3 +56,6 @@
 ;; (unpin! t)
 
 (package! dwim-shell-command)
+
+(package! treesit-auto
+  :recipe (:host github :repo "renzmann/treesit-auto"))

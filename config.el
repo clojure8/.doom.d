@@ -223,6 +223,12 @@
        :no-progress t
        :utils "open"))))
 
+;; treesit-auto: 自动切换到 tree-sitter 版本的 major-mode
+(use-package! treesit-auto
+  :config
+  (setq treesit-auto-install t)
+  (global-treesit-auto-mode))
+
 ;; 范围高亮
 (setq show-paren-style 'expression
       show-paren-delay 0
