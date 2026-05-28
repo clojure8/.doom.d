@@ -3,3 +3,7 @@
 (use-package! acp)
 
 (use-package! agent-shell)
+
+(use-package! agent-recall
+  :config
+  (setq agent-recall-search-paths '("~/projects")))

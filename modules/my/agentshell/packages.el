@@ -11,3 +11,5 @@
 ;; 依赖 claude-agent-acp 
 ;; npm install -g @agentclientprotocol/claude-agent-acp
 (package! agent-shell)
+
+(package! agent-recall)
