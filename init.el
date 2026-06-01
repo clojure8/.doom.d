@@ -205,6 +205,7 @@
        web
        gterm
        gptel
+       aigen
        ;; awesome-tray
        translate
        jinx
