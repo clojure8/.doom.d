@@ -203,6 +203,7 @@
        lsp-bridge
        golang
        web
+       gterm
        gptel
        ;; awesome-tray
        translate
