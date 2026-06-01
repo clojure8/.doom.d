@@ -3,8 +3,8 @@
 ;; Custom layout persistence system
 (defvar my/layout-directory 
   (expand-file-name "layouts/" 
-                    (or (bound-and-true-p doom-user-dir)
-                        (bound-and-true-p doom-private-dir)
+                    (or (bound-and-true-p doom-private-dir)
+                        (bound-and-true-p doom-user-dir)
                         user-emacs-directory))
   "Directory to store saved layouts.")
 

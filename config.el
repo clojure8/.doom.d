@@ -40,40 +40,42 @@
               ;; Shell
               sh-basic-offset 4
               sh-indentation 4
-              ;; JavaScript / TypeScript / JSON
-              js-indent-level 4
-              js-switch-indent-offset 4
-              js2-basic-offset 4
-              typescript-indent-level 4
-              json-reformat:indent-width 4
+              ;; JavaScript / TypeScript / JSON（web：2 空格）
+              js-indent-level 2
+              js-switch-indent-offset 2
+              js2-basic-offset 2
+              typescript-indent-level 2
+              json-reformat:indent-width 2
               ;; Python
               python-indent-offset 4
               go-ts-mode-indent-offset 4
-              ;; CSS / SCSS / Less
-              css-indent-offset 4
-              ;; web-mode
-              web-mode-markup-indent-offset 4
-              web-mode-css-indent-offset 4
-              web-mode-code-indent-offset 4
-              web-mode-attr-indent-offset 4
+              ;; CSS / SCSS / Less（web：2 空格）
+              css-indent-offset 2
+              ;; web-mode（html/vue/jsx：2 空格）
+              web-mode-markup-indent-offset 2
+              web-mode-css-indent-offset 2
+              web-mode-code-indent-offset 2
+              web-mode-attr-indent-offset 2
               ;; Lua / Rust / Ruby
               lua-indent-level 4
               rust-indent-offset 4
               ruby-indent-level 4
-              ;; XML / SGML / HTML
+              ;; XML（非 web，保持 4）
               nxml-child-indent 4
               nxml-attribute-indent 4
-              sgml-basic-offset 4
+              ;; SGML / HTML（html-mode、js-jsx-mode：web 2 空格）
+              sgml-basic-offset 2
               ;; tree-sitter *-ts-mode 各自独立的 offset
               c-ts-mode-indent-offset 4
               c-ts-common-indent-offset 4
-              typescript-ts-mode-indent-offset 4
-              tsx-ts-mode-indent-offset 4
+              ;; TypeScript / TSX / JSON（web：2 空格）
+              typescript-ts-mode-indent-offset 2
+              tsx-ts-mode-indent-offset 2
               rust-ts-mode-indent-offset 4
               ruby-ts-mode-indent-offset 4
               lua-ts-mode-indent-offset 4
               toml-ts-mode-indent-offset 4
-              json-ts-mode-indent-offset 4
+              json-ts-mode-indent-offset 2
               yaml-ts-mode-indent-offset 4
               dockerfile-ts-mode-indent-offset 4
               cmake-ts-mode-indent-offset 4
@@ -181,16 +183,7 @@
     (set-face-attribute 'doom-window-select-face nil :height 200)
     (set-face-attribute 'doom-window-select-number-face nil :height 200)))
 
-(after! centaur-tabs
-  (map! :leader
-        :prefix "t"
-        "l" #'centaur-tabs-forward
-        "h" #'centaur-tabs-backward
-        "k" #'centaur-tabs--kill-this-buffer-dont-ask)
-  (evil-define-key 'normal 'global
-    (kbd "t h") #'centaur-tabs-backward
-    (kbd "t l") #'centaur-tabs-forward
-    (kbd "t k") #'centaur-tabs--kill-this-buffer-dont-ask))
+
 
 
 (use-package! dwim-shell-command

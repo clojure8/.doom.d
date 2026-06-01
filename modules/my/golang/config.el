@@ -16,7 +16,9 @@
 (after! go-ts-mode
   ;; go-ts-mode 专属缩进偏移
   (setq-hook! 'go-ts-mode-hook go-ts-mode-indent-offset 4)
-  (add-hook 'go-ts-mode-hook #'+go/setup-buffer))
+  (add-hook 'go-ts-mode-hook #'+go/setup-buffer)
+  ;; 继承 go-mode-map 的 localleader 键绑定
+  (set-keymap-parent go-ts-mode-map go-mode-map))
 
 ;; 自定义 Go 项目管理函数
 (defun +go/run-main ()
@@ -435,7 +437,7 @@
 ;; 设置 Go 相关的键绑定（go-mode 和 go-ts-mode 共用）
 (map! :after go-mode
       :localleader
-      :map (go-mode-map go-ts-mode-map)
+      :map go-mode-map
       ;; 基础操作
       (:prefix ("g" . "go")
                "a" #'go-tag-add
@@ -639,5 +641,5 @@
   ;; 添加 transient 菜单键绑定
   (map! :after go-mode
         :localleader
-        :map (go-mode-map go-ts-mode-map)
+        :map go-mode-map
         "m" #'+go/transient-menu))

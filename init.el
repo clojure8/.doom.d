@@ -26,7 +26,7 @@
        ;;helm              ; the *other* search engine for love and life
        ;;ido               ; the other *other* search engine...
        ;;ivy               ; a search engine for love and life
-       vertico           ; the search engineof the future
+       vertico           ; the search engine of the future
 
        :ui
        deft              ; notational velocity for Emacs
@@ -118,8 +118,8 @@
        ;;ada               ; In strong typing we (blindly) trust
        ;;agda              ; types of types of types of types...
        ;;beancount         ; mind the GAAP
-       ;;(cc +lsp)         ; C > C++ == 1
-       (clojure +lsp +tree-sitter )          ; java with a lisp
+       ;;(cc )         ; C > C++ == 1
+       (clojure  +tree-sitter )          ; java with a lisp
        ;;common-lisp       ; if you've seen one lisp, you've seen them all
        ;;coq               ; proofs-as-programs
        ;;crystal           ; ruby at the speed of c
@@ -138,22 +138,22 @@
        ;;fsharp            ; ML stands for Microsoft's Language
        ;;fstar             ; (dependent) types and (monadic) effects and Z3
        ;;gdscript          ; the language you waited for
-       (go +lsp +tree-sitter )       ; the hipster dialect
-       (graphql +lsp)    ; Give queries a REST
-       ;;(haskell +lsp)    ; a language that's lazier than I am
+       (go  +tree-sitter )       ; the hipster dialect
+       (graphql )    ; Give queries a REST
+       ;;(haskell )    ; a language that's lazier than I am
        hy                ; readability of scheme w/ speed of python
        ;;idris             ; a language you can depend on
-       (json +lsp +tree-sitter )              ; At least it ain't XML
+       (json  +tree-sitter )              ; At least it ain't XML
        ;;janet             ; Fun fact: Janet is me!
-       (java +lsp +tree-sitter )       ; the poster child for carpal tunnel syndrome
-       (javascript +lsp +tree-sitter)        ; all(hope(abandon(ye(who(enter(here))))))
+       (java  +tree-sitter )       ; the poster child for carpal tunnel syndrome
+       (javascript  +tree-sitter)        ; all(hope(abandon(ye(who(enter(here))))))
        ;;julia             ; a better, faster MATLAB
        ;;kotlin            ; a better, slicker Java(Script)
-       (latex +cdlatex +lsp +fold)            ; writing papers in Emacs has never been so fun
+       (latex +cdlatex  +fold)            ; writing papers in Emacs has never been so fun
        ;;lean              ; for folks with too much to prove
        ;;ledger            ; be audit you can be
-       (lua +lsp +tree-sitter)              ; one-based indices? one-based indices
-       (markdown +lsp +grip +tree-sitter)         ; writing docs for people to ignore
+       (lua  +tree-sitter)              ; one-based indices? one-based indices
+       (markdown  +grip +tree-sitter)         ; writing docs for people to ignore
        nim               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
@@ -162,24 +162,24 @@
        plantuml          ; diagrams for confusing people more
        graphviz          ; diagrams for confusing yourself even more
        purescript        ; javascript, but functional
-       (python +lsp +tree-sitter +uv +pyenv +pyright +cython)            ; beautiful is better than ugly
+       (python  +tree-sitter +uv +pyenv +pyright +cython)            ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
        ;;racket            ; a DSL for DSLs
        ;;raku              ; the artist formerly known as perl6
        (rest +jq)             ; Emacs as a REST client
        ;;rst               ; ReST in peace
        ;;(ruby +rails)     ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
-       (rust +lsp +tree-sitter)       ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
+       (rust  +tree-sitter)       ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
        ;;scala             ; java, but good
        ;;(scheme +guile)   ; a fully conniving family of lisps
-       (sh +lsp)               ; she sells {ba,z,fi}sh shells on the C xor
+       (sh )               ; she sells {ba,z,fi}sh shells on the C xor
        ;;sml
        ;;solidity          ; do you need a blockchain? No.
-       (swift +lsp +tree-sitter)            ; who asked for emoji variables?
+       (swift  +tree-sitter)            ; who asked for emoji variables?
        ;;terra             ; Earth and Moon in alignment for performance.
-       (web +lsp +tree-sitter)              ; the tubes
-       (yaml +lsp +tree-sitter)             ; JSON, but readable
-       (zig +lsp +tree-sitter)              ; C, but simpler
+       (web  +tree-sitter)              ; the tubes
+       (yaml  +tree-sitter)             ; JSON, but readable
+       (zig  +tree-sitter)              ; C, but simpler
 
        :email
        ;;(mu4e +org +gmail)
@@ -202,6 +202,7 @@
        agentshell
        lsp-bridge
        golang
+       web
        gptel
        ;; awesome-tray
        translate
