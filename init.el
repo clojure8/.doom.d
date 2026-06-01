@@ -207,7 +207,7 @@
        gptel
        ;; awesome-tray
        translate
-       ;; jinx
+       jinx
        layout
        minuet
        (org +pretty))
