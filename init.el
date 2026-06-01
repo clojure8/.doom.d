@@ -203,6 +203,7 @@
        lsp-bridge
        golang
        web
+       markdown
        gterm
        gptel
        aigen

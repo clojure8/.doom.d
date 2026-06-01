@@ -226,3 +226,9 @@
 (setq show-paren-style 'expression
       show-paren-delay 0
       show-paren-when-point-inside-paren t)
+
+;; prose 软换行：Doom 的 word-wrap 提供「保留缩进、语言感知」的视觉折行，
+;; 默认不全局开启。这里开启 +global-word-wrap-mode，覆盖 text/markdown/org/rst
+;; 等 prose 模式（见 `+word-wrap-text-modes'）；prog-mode 默认不受影响。
+(when (modulep! :editor word-wrap)
+  (add-hook 'doom-after-init-hook #'+global-word-wrap-mode))
