@@ -243,3 +243,11 @@
 (use-package! breadcrumb
   :hook ((prog-mode . breadcrumb-local-mode)
          (text-mode . breadcrumb-local-mode)))
+
+;; Info 手册彩色化（变量/函数/键位等不同着色，更易读）
+(use-package! info-colors
+  :hook (Info-selection . info-colors-fontify-node))
+
+;; 把分页符 ^L 渲染成一条横线（C-x [ / C-x ] 按页跳转更直观）
+(use-package! page-break-lines
+  :config (global-page-break-lines-mode))

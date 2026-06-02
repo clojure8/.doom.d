@@ -157,7 +157,7 @@
        nim               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
-       (org +pandoc +pretty +dragndrop +gnuplot +journal +jupyter +present  )             ; organize your plain life in plain text
+       (org +pandoc +pretty +dragndrop +gnuplot +journal +jupyter +present +roam2 )             ; organize your plain life in plain text
        ;;php               ; perl's insecure younger brother
        plantuml          ; diagrams for confusing people more
        graphviz          ; diagrams for confusing yourself even more
@@ -189,7 +189,7 @@
        :app
        ;;calendar
        ;;emms
-       ;;everywhere        ; *leave* Emacs!? You must be joking
+       everywhere        ; *leave* Emacs!? You must be joking
        ;;irc               ; how neckbeards socialize
        ;;(rss +org)        ; emacs as an RSS reader
 
@@ -213,6 +213,9 @@
        aigen
        dirvish
        blamer
+       magit
+       editing
+       reader
        ;; awesome-tray
        translate
        jinx

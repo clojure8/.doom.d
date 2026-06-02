@@ -62,3 +62,7 @@
 
 ;; breadcrumb：header-line 显示「当前在哪个项目/文件/函数（imenu 路径）」
 (package! breadcrumb)
+
+;; Info 手册彩色化 + 漂亮的分页符（^L → 横线）
+(package! info-colors)
+(package! page-break-lines)
