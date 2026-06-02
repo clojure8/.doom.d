@@ -16,3 +16,6 @@ fly*
 /layouts/
 .omc/
 custom.el
+
+# my/preview 生成的实时预览 HTML（写在源文件同目录，关 buffer 自动删）
+.*.preview.html
