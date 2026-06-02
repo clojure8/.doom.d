@@ -124,7 +124,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-xcode)
+(setq doom-theme 'doom-one)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -173,6 +173,11 @@
       :desc "Execute command" "SPC" #'execute-extended-command)
 (map! "s-p" #'switch-to-buffer)
 
+
+;; doom-one 给 `magit-header-line' 脸设了 3px 蓝色 :box，magit-log 等缓冲区顶部
+;; 的 header-line 会因此显示为“四周一圈高亮边框”。这里去掉边框。
+(custom-set-faces!
+  '(magit-header-line :box nil))
 
 ;; 放大 window-select 的提示字体（GUI 下使用像素倍数，TUI 下使用固定绝对高度）
 (after! window-select
