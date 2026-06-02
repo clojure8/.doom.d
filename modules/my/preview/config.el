@@ -23,6 +23,14 @@
 (defvar-local +preview--tmp nil "非文件 buffer 用的临时 HTML 路径。")
 (defvar +preview--xwidget nil "复用的 xwidget-webkit 会话。")
 
+;; Doom 的 :ui popup 默认把 `^\*xwidget' 缓冲区当 popup 丢到底部（side . bottom），
+;; 且 display-buffer-alist 的优先级高于任何传给 display-buffer 的位置参数，所以光
+;; 在代码里 split-window 没用。这里加一条更具体、更靠前的规则把 xwidget-webkit 预览
+;; 放到右侧、常驻（不随 ESC 关闭、不超时回收）。
+(when (modulep! :ui popup)
+  (set-popup-rule! "^\\*xwidget-webkit"
+    :side 'right :width 0.5 :select nil :quit nil :ttl nil :modeline nil))
+
 ;; ── 导出 ──────────────────────────────────────────────────────────────────
 (defun +preview--html-path ()
   "返回本 buffer 预览 HTML 的输出路径。
@@ -73,20 +81,17 @@
                     (ignore-errors (xwidget-live-p +preview--xwidget))
                     +preview--xwidget))
          (buf  (and sess (ignore-errors (xwidget-buffer sess)))))
+    ;; 窗口位置统一交给上面的 popup 规则（右侧）；这里只负责导航/重载与确保可见。
     (if (and sess buf (buffer-live-p buf))
         ;; 复用会话：导航到（同一）URL 即重载，并确保它在某个窗口里可见
-        ;; （窗口可能已被关掉——之前的 bug：只导航不重新显示，看起来“没反应”）。
+        ;; （窗口可能已被关掉——曾经的 bug：只导航不重新显示，看起来“没反应”）。
         (progn
           (xwidget-webkit-goto-uri sess url)
-          (unless (get-buffer-window buf)
-            (display-buffer buf '((display-buffer-in-side-window)
-                                  (side . right) (window-width . 0.5)))))
-      ;; 新建会话：右侧分屏
-      (let ((src (selected-window)))
-        (select-window (or (window-in-direction 'right) (split-window-right)))
+          (unless (get-buffer-window buf) (display-buffer buf)))
+      ;; 新建会话（display 走 popup 规则到右侧），不抢源窗口焦点
+      (save-selected-window
         (xwidget-webkit-browse-url url t)
-        (setq +preview--xwidget (xwidget-webkit-current-session))
-        (when (window-live-p src) (select-window src))))))
+        (setq +preview--xwidget (xwidget-webkit-current-session))))))
 
 (defun +preview--show-browser (html)
   (browse-url (+preview--file-url html)))
