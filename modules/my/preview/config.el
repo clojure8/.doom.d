@@ -50,8 +50,10 @@
         (user-error "markdown 预览需要 pandoc（brew install pandoc）"))
       (let ((status (apply #'call-process-region (point-min) (point-max) "pandoc"
                            nil `((:file ,out) nil) nil
+                           ;; 用 -V pagetitle 只设 <head><title>（浏览器标签名），
+                           ;; 不让 pandoc 在正文顶部渲染出 "preview: xx.md" 标题行。
                            (append +preview-pandoc-args
-                                   (list "--metadata" (concat "title=" title))))))
+                                   (list "-V" (concat "pagetitle=" title))))))
         (unless (eq status 0)
           (user-error "pandoc 导出失败（退出码 %s）" status)))))
    (t (user-error "只支持 org / markdown buffer")))
@@ -66,10 +68,20 @@
   (unless (and (display-graphic-p) (featurep 'xwidget-internal))
     (user-error "xwidget 不可用：需 GUI frame + 编译了 --with-xwidgets 的 Emacs"))
   (require 'xwidget)
-  (let ((url (+preview--file-url html)))
-    (if (and +preview--xwidget (ignore-errors (xwidget-live-p +preview--xwidget)))
-        ;; 复用会话：导航到（同一）URL 即重载
-        (xwidget-webkit-goto-uri +preview--xwidget url)
+  (let* ((url (+preview--file-url html))
+         (sess (and +preview--xwidget
+                    (ignore-errors (xwidget-live-p +preview--xwidget))
+                    +preview--xwidget))
+         (buf  (and sess (ignore-errors (xwidget-buffer sess)))))
+    (if (and sess buf (buffer-live-p buf))
+        ;; 复用会话：导航到（同一）URL 即重载，并确保它在某个窗口里可见
+        ;; （窗口可能已被关掉——之前的 bug：只导航不重新显示，看起来“没反应”）。
+        (progn
+          (xwidget-webkit-goto-uri sess url)
+          (unless (get-buffer-window buf)
+            (display-buffer buf '((display-buffer-in-side-window)
+                                  (side . right) (window-width . 0.5)))))
+      ;; 新建会话：右侧分屏
       (let ((src (selected-window)))
         (select-window (or (window-in-direction 'right) (split-window-right)))
         (xwidget-webkit-browse-url url t)

@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>preview: README.md</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {  background-color: #f8f8f8; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ef2929; } /* Alert */
+    code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #204a87; } /* Attribute */
+    code span.bn { color: #0000cf; } /* BaseN */
+    code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4e9a06; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #8f5902; font-style: italic; } /* Comment */
+    code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+    code span.dt { color: #204a87; } /* DataType */
+    code span.dv { color: #0000cf; } /* DecVal */
+    code span.er { color: #a40000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #0000cf; } /* Float */
+    code span.fu { color: #204a87; font-weight: bold; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+    code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+    code span.ot { color: #8f5902; } /* Other */
+    code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+    code span.sc { color: #ce5c00; font-weight: bold; } /* SpecialChar */
+    code span.ss { color: #4e9a06; } /* SpecialString */
+    code span.st { color: #4e9a06; } /* String */
+    code span.va { color: #000000; } /* Variable */
+    code span.vs { color: #4e9a06; } /* VerbatimString */
+    code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h1 id="doom-emacs-configuration">Doom Emacs Configuration</h1>
+<p>个人化的 Doom Emacs 配置，集成 AI 工具和多语言开发环境，针对 macOS +
+中文用户优化。</p>
+<h2 id="特色功能">特色功能</h2>
+<ul>
+<li><strong>AI 集成套件</strong>: Agent Shell、Gptel (智谱 AI /
+DeepSeek)、Minuet 本地 LLM 补全、Claude Code IDE</li>
+<li><strong>多语言开发</strong>:
+Go、Rust、Python、JavaScript/TypeScript、Clojure、Swift、Zig 等 (基于
+lsp-bridge + tree-sitter)</li>
+<li><strong>现代化界面</strong>: JetBrainsMono 字体、doom-xcode
+主题、Vertico 补全、Treemacs 文件树</li>
+<li><strong>开发工具链</strong>:
+Magit、Docker、Tree-sitter、保存时自动格式化、多光标编辑</li>
+<li><strong>系统优化</strong>: macOS 支持、中文输入法、Google
+Translate、全局 4 空格缩进</li>
+</ul>
+<h2 id="快速开始">快速开始</h2>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 首次安装 Doom Emacs</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/doomemacs/doomemacs ~/.config/emacs</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">~/.config/emacs/bin/doom</span> install</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 克隆本配置</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone <span class="op">&lt;</span>this-repo<span class="op">&gt;</span> ~/.doom.d</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 同步配置</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">doom</span> sync</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 重启 Emacs</span></span></code></pre></div>
+<h2 id="项目结构">项目结构</h2>
+<pre><code>~/.doom.d/
+├── init.el                  # Doom 模块配置
+├── config.el                # 核心用户配置
+├── packages.el              # 外部包声明
+└── modules/my/              # 自定义模块
+    ├── agentshell/          # Agent Shell / Claude Agent 集成
+    ├── awesome-tray/        # 状态栏美化 (可选)
+    ├── claudecode/          # Claude Code IDE 集成
+    ├── golang/              # Go 扩展开发工具
+    ├── gptel/               # AI 聊天客户端
+    ├── jinx/                # 现代拼写检查 (可选)
+    ├── layout/              # 窗口布局管理
+    ├── lsp-bridge/          # 高性能 LSP 补全
+    ├── minuet/              # 本地 LLM 代码补全 (Ollama)
+    ├── org/                 # Org-mode 增强
+    ├── reader/              # 电子书阅读器
+    └── translate/           # Google 翻译集成</code></pre>
+<h2 id="核心模块">核心模块</h2>
+<h3 id="ai-集成">AI 集成</h3>
+<table>
+<thead>
+<tr class="header">
+<th>模块</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>agentshell</strong></td>
+<td>Agent Protocol + Claude Agent Shell，AI Coding Partner</td>
+</tr>
+<tr class="even">
+<td><strong>claudecode</strong></td>
+<td>Claude Code IDE（<code>SPC c c</code> / <code>C-c C-'</code>
+打开菜单）</td>
+</tr>
+<tr class="odd">
+<td><strong>gptel</strong></td>
+<td>多后端 AI 聊天：智谱 AI (glm-5.1)、DeepSeek</td>
+</tr>
+<tr class="even">
+<td><strong>minuet</strong></td>
+<td>Ollama 本地 LLM 行内代码补全（qwen2.5-coder:3b）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="开发语言initel-lang">开发语言（init.el :lang）</h3>
+<p>通过 Doom <code>:lang</code> 模块启用，均配备 LSP + Tree-sitter：</p>
+<p>Go、Python (uv/pyenv/pyright)、JavaScript/TypeScript、Rust、Clojure、
+Java、Swift、Lua、Nim、Zig、GraphQL、YAML、JSON、Markdown、LaTeX、 Web
+(HTML/CSS)、Shell、Org-mode、PureScript</p>
+<h3 id="工具模块">工具模块</h3>
+<table>
+<thead>
+<tr class="header">
+<th>模块</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>golang</strong></td>
+<td>Go 完整工具链：构建/测试/调试 (Delve/DAP)、性能分析、代码生成、Guru
+分析</td>
+</tr>
+<tr class="even">
+<td><strong>lsp-bridge</strong></td>
+<td>Python 实现的高性能 LSP 补全前端，全局启用</td>
+</tr>
+<tr class="odd">
+<td><strong>layout</strong></td>
+<td>窗口布局保存/恢复，支持预设模板和自动保存</td>
+</tr>
+<tr class="even">
+<td><strong>translate</strong></td>
+<td>Google Translate 集成，支持中英自动互译</td>
+</tr>
+<tr class="odd">
+<td><strong>org</strong></td>
+<td>Org-mode 增强：valign 表格对齐、org-modern 美化、org-appear
+动态标记</td>
+</tr>
+<tr class="even">
+<td><strong>reader</strong></td>
+<td>Emacs 电子书阅读器</td>
+</tr>
+</tbody>
+</table>
+<h2 id="主要快捷键">主要快捷键</h2>
+<h3 id="全局">全局</h3>
+<table>
+<thead>
+<tr class="header">
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SPC SPC</code></td>
+<td>Execute command (M-x)</td>
+</tr>
+<tr class="even">
+<td><code>s-p</code></td>
+<td>切换 Buffer</td>
+</tr>
+<tr class="odd">
+<td><code>SPC c c</code></td>
+<td>Claude Code IDE 菜单</td>
+</tr>
+<tr class="even">
+<td><code>C-c C-'</code></td>
+<td>Claude Code IDE 菜单 (备用)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tab-管理centaur-tabs">Tab 管理（centaur-tabs）</h3>
+<table>
+<thead>
+<tr class="header">
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SPC t l</code> / <code>t l</code></td>
+<td>下一个 Tab</td>
+</tr>
+<tr class="even">
+<td><code>SPC t h</code> / <code>t h</code></td>
+<td>上一个 Tab</td>
+</tr>
+<tr class="odd">
+<td><code>SPC t k</code> / <code>t k</code></td>
+<td>关闭当前 Tab</td>
+</tr>
+</tbody>
+</table>
+<h3 id="翻译spc-t">翻译（SPC T）</h3>
+<table>
+<thead>
+<tr class="header">
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SPC T t</code></td>
+<td>翻译光标词/选中文本</td>
+</tr>
+<tr class="even">
+<td><code>SPC T q</code></td>
+<td>交互式翻译</td>
+</tr>
+<tr class="odd">
+<td><code>SPC T r</code></td>
+<td>反向翻译（中↔︎英）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="窗口布局spc-l">窗口布局（SPC l）</h3>
+<table>
+<thead>
+<tr class="header">
+<th>快捷键</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>SPC l a</code></td>
+<td>布局管理菜单 (transient)</td>
+</tr>
+<tr class="even">
+<td><code>SPC l u</code></td>
+<td>撤销布局变化</td>
+</tr>
+<tr class="odd">
+<td><code>SPC l r</code></td>
+<td>重做布局变化</td>
+</tr>
+<tr class="even">
+<td><code>SPC l m</code></td>
+<td>最大化当前窗口</td>
+</tr>
+</tbody>
+</table>
+<h3 id="go-开发localleader">Go 开发（localleader）</h3>
+<table>
+<thead>
+<tr class="header">
+<th>前缀</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>, g</code></td>
+<td>代码生成（tag/impl/doc/rename）</td>
+</tr>
+<tr class="even">
+<td><code>, t</code></td>
+<td>测试（生成/运行/覆盖率）</td>
+</tr>
+<tr class="odd">
+<td><code>, r</code></td>
+<td>运行（当前文件/main/playground/REPL）</td>
+</tr>
+<tr class="even">
+<td><code>, b</code></td>
+<td>构建（build/vet/generate/clean）</td>
+</tr>
+<tr class="odd">
+<td><code>, d</code></td>
+<td>调试（DAP/Delve，步进/断点/变量）</td>
+</tr>
+<tr class="even">
+<td><code>, u</code></td>
+<td>Guru 代码分析（引用/调用链/实现）</td>
+</tr>
+<tr class="odd">
+<td><code>, m</code></td>
+<td>完整 transient 菜单</td>
+</tr>
+</tbody>
+</table>
+<h2 id="缩进标准">缩进标准</h2>
+<p>全局 <strong>4
+空格</strong>（<code>indent-tabs-mode nil</code>），以下例外：</p>
+<ul>
+<li><strong>Go</strong>：真实 Tab（<code>indent-tabs-mode t</code>，遵从
+gofmt 规范）</li>
+</ul>
+<h2 id="环境变量">环境变量</h2>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># AI 服务 API 密钥</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">GPTEL_ZHIPU_API_KEY</span><span class="op">=</span><span class="st">&quot;your_zhipu_ai_key&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">GPTEL_DEEPSEEK_API_KEY</span><span class="op">=</span><span class="st">&quot;your_deepseek_key&quot;</span></span></code></pre></div>
+<h2 id="维护命令">维护命令</h2>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">doom</span> sync      <span class="co"># 同步配置</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">doom</span> upgrade   <span class="co"># 更新包</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">doom</span> clean     <span class="co"># 清理缓存</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">doom</span> doctor    <span class="co"># 检查问题</span></span></code></pre></div>
+<h2 id="系统要求">系统要求</h2>
+<ul>
+<li><strong>平台</strong>: macOS（主要）</li>
+<li><strong>Emacs</strong>: 29+（tree-sitter 原生支持）</li>
+<li><strong>Doom Emacs</strong>: 3.0+</li>
+<li><strong>字体</strong>: JetBrainsMono Nerd Font</li>
+<li><strong>本地 LLM（可选）</strong>: Ollama + qwen2.5-coder:3b</li>
+</ul>
+</body>
+</html>
