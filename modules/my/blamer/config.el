@@ -5,9 +5,8 @@
 
 (use-package! blamer
   :commands (blamer-mode global-blamer-mode)
-  :init
-  ;; 默认全局开启：所有 git 跟踪的文件 buffer 都生效
-  (add-hook 'doom-after-init-hook #'global-blamer-mode)
+  ;; 默认不再全局开启光标行 blame 提示（太干扰）。需要时 `M-x blamer-mode'
+  ;; 临时在当前 buffer 打开，或 `M-x global-blamer-mode' 全局打开。
   :config
   (setq blamer-idle-time 0.5
         blamer-min-offset 6
