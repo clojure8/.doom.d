@@ -204,6 +204,7 @@
        golang
        web
        markdown
+       preview
        clojure
        combobulate
        lisp
