@@ -232,3 +232,9 @@
 ;; 等 prose 模式（见 `+word-wrap-text-modes'）；prog-mode 默认不受影响。
 (when (modulep! :editor word-wrap)
   (add-hook 'doom-after-init-hook #'+global-word-wrap-mode))
+
+;; breadcrumb：在 header-line 显示「项目 › 文件 › 当前函数/命名空间（imenu 路径）」，
+;; 大文件/深层代码里定位很有用。只在编程与文本 buffer 启用。
+(use-package! breadcrumb
+  :hook ((prog-mode . breadcrumb-local-mode)
+         (text-mode . breadcrumb-local-mode)))

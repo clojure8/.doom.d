@@ -59,3 +59,6 @@
 
 (package! treesit-auto
   :recipe (:host github :repo "renzmann/treesit-auto"))
+
+;; breadcrumb：header-line 显示「当前在哪个项目/文件/函数（imenu 路径）」
+(package! breadcrumb)

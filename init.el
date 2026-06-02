@@ -204,9 +204,14 @@
        golang
        web
        markdown
+       clojure
+       combobulate
+       lisp
        gterm
        gptel
        aigen
+       dirvish
+       blamer
        ;; awesome-tray
        translate
        jinx
