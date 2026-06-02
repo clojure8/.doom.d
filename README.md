@@ -1,14 +1,17 @@
 # Doom Emacs Configuration
 
-个人化的 Doom Emacs 配置，集成 AI 工具和多语言开发环境，针对 macOS + 中文用户优化。
+个人化的 Doom Emacs 配置，集成 AI 工具、数据科学与多语言开发环境，针对 macOS + 中文用户优化。
 
 ## 特色功能
 
-- **AI 集成套件**: Agent Shell、Gptel (智谱 AI / DeepSeek)、Minuet 本地 LLM 补全、Claude Code IDE
-- **多语言开发**: Go、Rust、Python、JavaScript/TypeScript、Clojure、Swift、Zig 等 (基于 lsp-bridge + tree-sitter)
-- **现代化界面**: JetBrainsMono 字体、doom-xcode 主题、Vertico 补全、Treemacs 文件树
-- **开发工具链**: Magit、Docker、Tree-sitter、保存时自动格式化、多光标编辑
-- **系统优化**: macOS 支持、中文输入法、Google Translate、全局 4 空格缩进
+- **AI 集成套件**: Agent Shell、Gptel（智谱 GLM / DeepSeek）、Minuet 本地 LLM 行内补全、aigen 就地代码生成
+- **补全引擎**: lsp-bridge（Python 实现的高性能 LSP 前端，全局启用，非 eglot）
+- **多语言开发**: Go、Rust、Python、JS/TS、Vue/React、Clojure、Swift、Zig 等（lsp-bridge + tree-sitter）
+- **结构化编辑**: combobulate（tree-sitter 语法树导航/编辑）、evil-cleverparens（Lisp 括号操作）
+- **写作 & 文档**: org（super-agenda / roam / 美化 / Jupyter）、markdown（gfm + 实时预览）、xwidget/浏览器预览
+- **数据科学**: emacs-jupyter，org-babel 内联执行 Python（含 matplotlib 内联绘图）
+- **现代界面**: JetBrainsMono Nerd Font、doom-one 主题、Vertico、Treemacs、dirvish、瘦身 modeline
+- **系统优化**: macOS 支持、中文输入、jinx 拼写检查（跳过 CJK）、Google 翻译、按 web/非 web 区分缩进
 
 ## 快速开始
 
@@ -20,63 +23,83 @@ git clone https://github.com/doomemacs/doomemacs ~/.config/emacs
 # 克隆本配置
 git clone <this-repo> ~/.doom.d
 
-# 同步配置
-doom sync
-
-# 重启 Emacs
+doom sync   # 同步配置，重启 Emacs
 ```
 
 ## 项目结构
 
 ```
 ~/.doom.d/
-├── init.el                  # Doom 模块配置
-├── config.el                # 核心用户配置
+├── init.el                  # Doom 模块开关
+├── config.el                # 核心用户配置（字体/主题/缩进/modeline/UI 小件）
 ├── packages.el              # 外部包声明
 └── modules/my/              # 自定义模块
-    ├── agentshell/          # Agent Shell / Claude Agent 集成
-    ├── awesome-tray/        # 状态栏美化 (可选)
-    ├── claudecode/          # Claude Code IDE 集成
-    ├── golang/              # Go 扩展开发工具
-    ├── gptel/               # AI 聊天客户端
-    ├── jinx/                # 现代拼写检查 (可选)
-    ├── layout/              # 窗口布局管理
-    ├── lsp-bridge/          # 高性能 LSP 补全
-    ├── minuet/              # 本地 LLM 代码补全 (Ollama)
-    ├── org/                 # Org-mode 增强
-    ├── reader/              # 电子书阅读器
-    └── translate/           # Google 翻译集成
+    ├── agentshell/          # Agent Protocol + Claude Agent Shell
+    ├── aigen/               # gptel 就地 AI 生成（注释→代码 / 总结 / 扩展）
+    ├── blamer/              # 行内 git blame（默认关，按需开）
+    ├── clojure/             # CIDER REPL 体验 + rich-comment 求值
+    ├── combobulate/         # tree-sitter 结构化导航/编辑
+    ├── dirvish/             # dired 现代化（预览/图标/属性列）
+    ├── editing/             # string-inflection 命名风格切换
+    ├── golang/              # Go 完整工具链
+    ├── gptel/              # AI 聊天（智谱 GLM / DeepSeek）
+    ├── gterm/               # Ghostty 引擎终端（emacs-libgterm）
+    ├── jinx/                # 拼写检查（enchant，跳过 CJK）
+    ├── layout/              # 窗口布局保存/恢复
+    ├── lisp/                # evil-cleverparens 结构化括号编辑
+    ├── lsp-bridge/          # 高性能 LSP 补全（python 后端已 pin）
+    ├── magit/               # magit-delta（语法高亮 diff）
+    ├── markdown/            # gfm-mode + 标题分级 + 数学
+    ├── minuet/              # 本地 LLM 行内补全（Ollama）
+    ├── org/                 # Org 增强 + super-agenda + roam + Jupyter
+    ├── preview/             # org/markdown 实时预览（xwidget / 浏览器）
+    ├── reader/              # 电子书阅读器（emacs-reader）
+    ├── translate/           # Google 翻译
+    └── web/                 # 前端（HTML/CSS/JS/Vue/React）lsp-bridge 接线
 ```
+
+> 另有 `claudecode/`、`awesome-tray/` 模块存在但默认未在 `init.el` 启用。
 
 ## 核心模块
 
-### AI 集成
+### AI
 
 | 模块 | 功能 |
 |------|------|
-| **agentshell** | Agent Protocol + Claude Agent Shell，AI Coding Partner |
-| **claudecode** | Claude Code IDE（`SPC c c` / `C-c C-'` 打开菜单） |
-| **gptel** | 多后端 AI 聊天：智谱 AI (glm-5.1)、DeepSeek |
-| **minuet** | Ollama 本地 LLM 行内代码补全（qwen2.5-coder:3b） |
+| **agentshell** | Agent Protocol + Claude Agent Shell |
+| **gptel** | 多后端 AI 聊天：智谱 GLM-5.1 / DeepSeek（key 走环境变量） |
+| **aigen** | 就地生成：`SPC o l g` 下 注释→代码 / 总结选区 / 扩展描述 / 自定义指令 |
+| **minuet** | Ollama 本地 LLM 行内补全（qwen2.5-coder:3b） |
 
-### 开发语言（init.el :lang）
+### 开发语言（init.el `:lang`，均 LSP + tree-sitter）
 
-通过 Doom `:lang` 模块启用，均配备 LSP + Tree-sitter：
+Go、Python（uv/pyenv/pyright）、JS/TS、Web（Vue/React/HTML/CSS）、Rust、Clojure、
+Java、Swift、Lua、Nim、Zig、GraphQL、YAML、JSON、Markdown、LaTeX、Shell、Org、PureScript
 
-Go、Python (uv/pyenv/pyright)、JavaScript/TypeScript、Rust、Clojure、
-Java、Swift、Lua、Nim、Zig、GraphQL、YAML、JSON、Markdown、LaTeX、
-Web (HTML/CSS)、Shell、Org-mode、PureScript
-
-### 工具模块
+### 编辑 / 工具
 
 | 模块 | 功能 |
 |------|------|
-| **golang** | Go 完整工具链：构建/测试/调试 (Delve/DAP)、性能分析、代码生成、Guru 分析 |
-| **lsp-bridge** | Python 实现的高性能 LSP 补全前端，全局启用 |
-| **layout** | 窗口布局保存/恢复，支持预设模板和自动保存 |
-| **translate** | Google Translate 集成，支持中英自动互译 |
-| **org** | Org-mode 增强：valign 表格对齐、org-modern 美化、org-appear 动态标记 |
-| **reader** | Emacs 电子书阅读器 |
+| **lsp-bridge** | 全局 LSP 补全；python 后端 pin 到带 epc/orjson 的解释器 |
+| **combobulate** | `C-c o o` 打开菜单，按语法节点导航/拖动/选区（9 个 ts-mode） |
+| **lisp** | evil 下 slurp/barf/wrap/move（elisp/clojure/scheme/hy/racket） |
+| **editing** | `SPC c ~` 循环命名风格、`SPC c _` 下划线↔驼峰 |
+| **golang** | 构建/测试/调试（Delve/DAP）/性能/代码生成/Guru，见 localleader |
+| **dirvish** | dired 现代化；`a` 书签 / `TAB` 子树 / `M-t` 全屏 |
+| **magit** | magit-delta 渲染语法高亮 diff（需 `git-delta`） |
+| **blamer** | 行内 git blame，默认关；`M-x blamer-mode` 按需开 |
+| **gterm** | Ghostty 引擎终端 |
+| **translate** | Google 翻译，中英自动互译 |
+| **layout** | 窗口布局保存/恢复 + 预设模板 |
+
+### 写作 / 文档 / 数据科学
+
+| 模块 | 功能 |
+|------|------|
+| **org** | valign 表格、org-modern/appear 美化、居中阅读、super-agenda 分组、org-roam(+UI)、ox-gfm、org-pandoc-import |
+| **markdown** | `.md` → gfm-mode、标题分级放大、行内数学、列表 2 空格缩进 |
+| **preview** | org/markdown 实时预览，`SPC m v` 下 xwidget（右侧内嵌）/ 浏览器 |
+| **org Jupyter** | `jupyter-python` 代码块内联执行（python3 kernel + matplotlib 内联绘图） |
 
 ## 主要快捷键
 
@@ -86,73 +109,104 @@ Web (HTML/CSS)、Shell、Org-mode、PureScript
 |--------|------|
 | `SPC SPC` | Execute command (M-x) |
 | `s-p` | 切换 Buffer |
-| `SPC c c` | Claude Code IDE 菜单 |
-| `C-c C-'` | Claude Code IDE 菜单 (备用) |
+| `SPC c ~` / `SPC c _` | 命名风格循环 / 下划线↔驼峰 |
+| `C-c o o` | combobulate 结构化编辑菜单（ts-mode 内） |
 
-### Tab 管理（centaur-tabs）
-
-| 快捷键 | 功能 |
-|--------|------|
-| `SPC t l` / `t l` | 下一个 Tab |
-| `SPC t h` / `t h` | 上一个 Tab |
-| `SPC t k` / `t k` | 关闭当前 Tab |
-
-### 翻译（SPC T）
+### AI 生成（`SPC o l g`）
 
 | 快捷键 | 功能 |
 |--------|------|
-| `SPC T t` | 翻译光标词/选中文本 |
-| `SPC T q` | 交互式翻译 |
-| `SPC T r` | 反向翻译（中↔英） |
+| `SPC o l g c` | 注释 → 代码（插到注释下方） |
+| `SPC o l g s` | 总结选区 |
+| `SPC o l g e` | 扩展描述/提纲为正文 |
+| `SPC o l g p` | 对选区执行自定义指令 |
 
-### 窗口布局（SPC l）
+### 预览（org / markdown，`SPC m v`）
 
 | 快捷键 | 功能 |
 |--------|------|
-| `SPC l a` | 布局管理菜单 (transient) |
-| `SPC l u` | 撤销布局变化 |
-| `SPC l r` | 重做布局变化 |
-| `SPC l m` | 最大化当前窗口 |
+| `SPC m v v` | 预览（自动选 xwidget/浏览器） |
+| `SPC m v x` / `b` | 强制 xwidget / 浏览器 |
+| `SPC m v q` | 停止保存自动刷新 |
 
-### Go 开发（localleader）
+### 翻译（`SPC T`）
+
+| 快捷键 | 功能 |
+|--------|------|
+| `SPC T t` / `q` / `r` | 光标词翻译 / 交互翻译 / 反向翻译 |
+
+### 窗口布局（`SPC l`）
+
+| 快捷键 | 功能 |
+|--------|------|
+| `SPC l a` / `u` / `r` / `m` | 布局菜单 / 撤销 / 重做 / 最大化 |
+
+### Go 开发（localleader `,`）
 
 | 前缀 | 功能 |
 |------|------|
-| `, g` | 代码生成（tag/impl/doc/rename） |
-| `, t` | 测试（生成/运行/覆盖率） |
-| `, r` | 运行（当前文件/main/playground/REPL） |
-| `, b` | 构建（build/vet/generate/clean） |
-| `, d` | 调试（DAP/Delve，步进/断点/变量） |
-| `, u` | Guru 代码分析（引用/调用链/实现） |
-| `, m` | 完整 transient 菜单 |
+| `, g` / `, t` / `, r` / `, b` / `, d` / `, u` / `, m` | 代码生成 / 测试 / 运行 / 构建 / 调试 / Guru 分析 / 完整菜单 |
+
+### Lisp 结构编辑（evil normal，lisp 系语言）
+
+| 键 | 功能 |
+|----|------|
+| `>)` / `<)` | 向右 slurp / barf |
+| `M-(` / `M-)` | 在前/后包一对括号 |
+| `M-j` / `M-k` | 当前 form 下移 / 上移 |
+
+## Jupyter / 数据科学
+
+org 文件里写 `jupyter-python` 代码块，光标置块内 `C-c C-c` 执行（异步，结果含图自动内联）：
+
+```org
+#+begin_src jupyter-python
+import matplotlib.pyplot as plt
+plt.plot([1,2,3],[1,4,9]); plt.show()
+#+end_src
+```
+
+- kernel：`python3`（ipykernel，装在 pyenv 3.12.2，含 numpy/pandas/matplotlib）
+- `M-x jupyter-run-repl` 开独立 REPL
+- 默认 header：异步 / 共享 session `py` / kernel `python3`
 
 ## 缩进标准
 
-全局 **4 空格**（`indent-tabs-mode nil`），以下例外：
-
-- **Go**：真实 Tab（`indent-tabs-mode t`，遵从 gofmt 规范）
+- 全局 **4 空格**（`indent-tabs-mode nil`）
+- **Web**（HTML/CSS/JS/TS/JSON/Vue）：**2 空格**；存在 `.editorconfig` 时以其为准
+- **Go**：真实 Tab（遵从 gofmt）
 
 ## 环境变量
 
 ```bash
-# AI 服务 API 密钥
 export GPTEL_ZHIPU_API_KEY="your_zhipu_ai_key"
 export GPTEL_DEEPSEEK_API_KEY="your_deepseek_key"
+# 可选：指定 lsp-bridge 的 python（需带 epc/orjson）
+export LSP_BRIDGE_PYTHON="$HOME/.pyenv/versions/3.12.2/bin/python3"
 ```
+
+## 外部依赖（按需）
+
+| 工具 | 用途 | 安装 |
+|------|------|------|
+| `jupyter` + `ipykernel` | 数据科学 | `pip install jupyter ipykernel` |
+| `pandoc` | markdown 预览 / org 导入导出 | `brew install pandoc` |
+| `git-delta` | magit 语法高亮 diff | `brew install git-delta` |
+| `coreutils`（`gls`） | dirvish 目录优先排序 | `brew install coreutils` |
+| `clojure-lsp` | Clojure 诊断/补全 | `brew install clojure-lsp/brew/clojure-lsp` |
+| Ollama + `qwen2.5-coder:3b` | minuet 本地补全 | `ollama pull qwen2.5-coder:3b` |
 
 ## 维护命令
 
 ```bash
 doom sync      # 同步配置
 doom upgrade   # 更新包
-doom clean     # 清理缓存
 doom doctor    # 检查问题
 ```
 
 ## 系统要求
 
 - **平台**: macOS（主要）
-- **Emacs**: 29+（tree-sitter 原生支持）
+- **Emacs**: 30+（tree-sitter / xwidget / 原生编译）
 - **Doom Emacs**: 3.0+
 - **字体**: JetBrainsMono Nerd Font
-- **本地 LLM（可选）**: Ollama + qwen2.5-coder:3b
