@@ -255,7 +255,7 @@
 ;; ── doom-modeline 瘦身：高度按字体行高比例（可配置）──────────────────────
 ;; 改 `+modeline-height-ratio' 调高度：1.0=与字体等高（最瘦），1.1~1.3 留点留白。
 ;; 改后 `M-x +modeline/apply-height' 即时生效（或重启）。
-(defcustom +modeline-height-ratio 1.1
+(defcustom +modeline-height-ratio 1.0
   "doom-modeline 高度相对字体行高 `frame-char-height' 的倍数。"
   :type 'number
   :group 'doom-modeline

@@ -41,6 +41,25 @@
      (python . t)
      (shell . t))))
 
+;; ── Jupyter（数据科学：org-babel + REPL）─────────────────────────────────
+;; 运行时：jupyter CLI（pyenv shims）+ python3 kernel（ipykernel，pyenv 3.12.2，
+;; 已装 numpy/pandas/matplotlib）。Doom :lang org +jupyter 已接好 ob-jupyter /
+;; jupyter-repl，这里只补默认 header 参数与就地求值体验。
+;;
+;; 写代码块：#+begin_src jupyter-python ... ；C-c C-c 执行（异步，结果含图自动内联）。
+(after! jupyter
+  ;; 非 org 缓冲区里 jupyter-eval（SPC m e 等）结果以 overlay 就地显示
+  (setq jupyter-eval-use-overlays t))
+
+(after! ob-jupyter
+  ;; jupyter-python 代码块默认：异步、共享名为 py 的 session、python3 kernel、
+  ;; 导出时代码+结果都带上
+  (setq org-babel-default-header-args:jupyter-python
+        '((:async . "yes")
+          (:session . "py")
+          (:kernel . "python3")
+          (:exports . "both"))))
+
 ;; ── org-super-agenda：agenda 分组显示 ─────────────────────────────────────
 (use-package! org-super-agenda
   :after org-agenda
