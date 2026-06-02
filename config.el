@@ -238,11 +238,11 @@
 (when (modulep! :editor word-wrap)
   (add-hook 'doom-after-init-hook #'+global-word-wrap-mode))
 
-;; breadcrumb：在 header-line 显示「项目 › 文件 › 当前函数/命名空间（imenu 路径）」，
-;; 大文件/深层代码里定位很有用。只在编程与文本 buffer 启用。
+;; breadcrumb：header-line 显示「项目 › 文件 › 当前函数/命名空间（imenu 路径）」。
+;; 默认不自动开启（不挂 hook），需要时手动 `M-x breadcrumb-local-mode'（当前 buffer）
+;; 或 `M-x breadcrumb-mode'（全局）。
 (use-package! breadcrumb
-  :hook ((prog-mode . breadcrumb-local-mode)
-         (text-mode . breadcrumb-local-mode)))
+  :commands (breadcrumb-local-mode breadcrumb-mode))
 
 ;; Info 手册彩色化（变量/函数/键位等不同着色，更易读）
 (use-package! info-colors
