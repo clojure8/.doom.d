@@ -66,3 +66,10 @@
 ;; Info 手册彩色化 + 漂亮的分页符（^L → 横线）
 (package! info-colors)
 (package! page-break-lines)
+
+;; Utility integrations
+(package! vlf)
+(package! wgrep)
+(package! dogears)
+(package! vundo)
+(package! consult-dir)

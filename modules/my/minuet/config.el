@@ -1,6 +1,13 @@
 ;;; my/minuet/config.el -*- lexical-binding: t; -*-
 
 (use-package! minuet
+  :commands (minuet-complete-with-minibuffer minuet-auto-suggestion-mode)
+  :init
+  ;; 先提供手动触发入口，避免自动 ghost text 与 lsp-bridge/acm 补全 UI 打架。
+  (map! :leader
+        (:prefix ("o" . "open")
+         (:prefix ("l" . "llm")
+          :desc "Minuet inline completion" "i" #'minuet-complete-with-minibuffer)))
   :config
   (setq minuet-provider 'openai-fim-compatible)
   (setq minuet-n-completions 1) ; recommended for Local LLM for resource saving

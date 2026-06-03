@@ -43,7 +43,7 @@
        ;;neotree           ; a project drawer, like NERDTree for vim
        ophints           ; highlight the region an operation acts on
        (popup +defaults)   ; tame sudden yet inevitable temporary windows
-       smooth-scroll     ; So smooth you won't believe it's not butter
+       ;;smooth-scroll   ; disabled: native pixel-scroll-precision-mode is used in GUI
        ;;tabs              ; a tab bar for Emacs
        treemacs          ; a project drawer, like neotree but cooler
        unicode           ; extended unicode support for various languages
@@ -96,12 +96,12 @@
        direnv
        docker
        editorconfig      ; let someone else argue about tabs vs spaces
-       ein               ; tame Jupyter notebooks with emacs
+       ;;ein             ; disabled: org +jupyter covers current notebook workflow
        (eval +overlay)     ; run code, run (also, repls)
        lookup              ; navigate your code and its documentation
        llm               ; when I said you needed friends, I didn't mean...
        ;;(lsp +eglot)    ; disabled: using lsp-bridge instead
-       magit             ; a git porcelain for Emacs
+       (magit +forge)    ; a git porcelain for Emacs + GitHub/GitLab issues/PRs
        make              ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
        pdf               ; pdf enhancements
@@ -153,7 +153,7 @@
        ;;lean              ; for folks with too much to prove
        ;;ledger            ; be audit you can be
        (lua  +tree-sitter)              ; one-based indices? one-based indices
-       (markdown  +grip +tree-sitter)         ; writing docs for people to ignore
+       (markdown  +tree-sitter)               ; writing docs for people to ignore
        nim               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel

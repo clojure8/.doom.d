@@ -19,11 +19,13 @@
         ;; mode-line 显示排序/过滤/标记信息
         dirvish-mode-line-format '(:left (sort symlink) :right (omit yank index)))
 
-  ;; 用 GNU ls 的分组目录优先（macOS 默认 BSD ls 不支持，gls 由 coreutils 提供）
-  (when (executable-find "gls")
-    (setq insert-directory-program "gls"))
-  (setq dired-listing-switches
-        "-l --almost-all --human-readable --group-directories-first --no-group")
+  ;; 用 GNU ls 的分组目录优先（macOS 默认 BSD ls 不支持，gls 由 coreutils 提供）。
+  ;; 如果没装 coreutils/gls，就退回 BSD ls 兼容参数，避免 Dirvish/Dired 报错。
+  (if (executable-find "gls")
+      (setq insert-directory-program "gls"
+            dired-listing-switches
+            "-l --almost-all --human-readable --group-directories-first --no-group")
+    (setq dired-listing-switches "-alh"))
 
   ;; evil 友好的常用键位（dirvish-mode-map）
   (map! :map dirvish-mode-map

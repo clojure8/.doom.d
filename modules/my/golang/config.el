@@ -89,7 +89,7 @@
                   "github.com/go-delve/delve/cmd/dlv@latest"
                   "honnef.co/go/tools/cmd/staticcheck@latest"
                   "github.com/golangci/golangci-lint/cmd/golangci-lint@latest"))
-         (cmd (mapconcat (lambda (t) (format "go install %s" t)) tools " && ")))
+         (cmd (mapconcat (lambda (tool) (format "go install %s" tool)) tools " && ")))
     (compile cmd)))
 
 (defun +go/generate ()
@@ -305,7 +305,7 @@
   :init
   ;; 禁用默认的 dap-ui 控制窗口，使用自定义布局
   (setq dap-auto-configure-features '(sessions locals breakpoints expressions tooltip))
-  
+
   :config
   ;; 启用 dap-mode
   (dap-mode 1)
@@ -313,10 +313,10 @@
   (when (display-graphic-p)
     (dap-tooltip-mode 1)
     (tooltip-mode 1))
-  
+
   ;; 注册 Go 调试适配器
   (require 'dap-dlv-go)
-  
+
   ;; 自定义 DAP UI 缓冲区布局配置
   (setq dap-ui-buffer-configurations
         `(("*dap-ui-locals*" . ((side . right) (slot . 0) (window-width . 60)))
@@ -324,7 +324,7 @@
           ("*dap-ui-expressions*" . ((side . right) (slot . 2) (window-width . 60)))
           ("*dap-ui-sessions*" . ((side . right) (slot . 3) (window-width . 60)))
           ("*dap-ui-repl*" . ((side . bottom) (slot . 0) (window-height . 12)))))
-  
+
   ;; 设置 Go 调试模板
   (dap-register-debug-template
    "Go Debug Main"
@@ -337,7 +337,7 @@
          :args nil
          :env nil
          :envFile nil))
-  
+
   (dap-register-debug-template
    "Go Debug Test"
    (list :type "go"
@@ -349,7 +349,7 @@
          :args nil
          :env nil
          :envFile nil))
-  
+
   (dap-register-debug-template
    "Go Attach"
    (list :type "go"
@@ -357,7 +357,7 @@
          :name "Attach to Process"
          :mode "local"
          :processId nil))
-  
+
   (dap-register-debug-template
    "Go Remote"
    (list :type "go"
@@ -400,18 +400,18 @@
   ;; 关闭所有 side windows
   (when (window-with-parameter 'window-side)
     (window-toggle-side-windows))
-  
+
   ;; 恢复窗口配置
   (when +go/dap-debug-window-config
     (set-window-configuration +go/dap-debug-window-config)
     (setq +go/dap-debug-window-config nil))
-  
+
   ;; 关闭调试相关缓冲区
   (dolist (buf (buffer-list))
     (let ((buf-name (buffer-name buf)))
       (when (string-match-p "^\\*dap-ui-" buf-name)
         (kill-buffer buf))))
-  
+
   ;; 关闭当前 session 的 log buffer
   (when session
     (let* ((session-name (dap--debug-session-name session))
@@ -423,14 +423,14 @@
 (after! dap-mode
   (add-hook 'dap-session-created-hook #'+go/dap-show-debug-log)
   (add-hook 'dap-session-created-hook #'+go/dap-setup-debug-layout)
-  
+
   ;; 在调试停止时显示 hydra
   (add-hook 'dap-stopped-hook
             (lambda (arg) (call-interactively #'dap-hydra)))
-  
+
   ;; 在调试会话终止时清理布局
   (add-hook 'dap-terminated-hook #'+go/dap-cleanup-debug-layout)
-  
+
   ;; 在调试会话断开连接时也清理布局
   (add-hook 'dap-disconnected-hook #'+go/dap-cleanup-debug-layout))
 
@@ -492,7 +492,7 @@
                "i" #'+go/install-tools)
 
 
-      
+
       ;; Guru 相关
       (:prefix ("u" . "guru")
                "d" #'go-guru-describe
