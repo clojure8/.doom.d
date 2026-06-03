@@ -153,16 +153,16 @@
        ;;lean              ; for folks with too much to prove
        ;;ledger            ; be audit you can be
        (lua  +tree-sitter)              ; one-based indices? one-based indices
-       (markdown  +tree-sitter)               ; writing docs for people to ignore
+       (markdown )               ; writing docs for people to ignore（用 gfm-mode，不要 markdown-ts-mode，去掉 +tree-sitter）
        nim               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
-       (org +pandoc +pretty +dragndrop +gnuplot +journal +jupyter +present +roam2 )             ; organize your plain life in plain text
+       (org +pandoc +pretty +dragndrop +gnuplot +journal +jupyter +present +roam )             ; organize your plain life in plain text（+roam2 已弃用→+roam，同一版本）
        ;;php               ; perl's insecure younger brother
        plantuml          ; diagrams for confusing people more
        graphviz          ; diagrams for confusing yourself even more
        purescript        ; javascript, but functional
-       (python  +tree-sitter +uv +pyenv +pyright +cython)            ; beautiful is better than ugly
+       (python  +tree-sitter +pyenv +pyright +cython)            ; beautiful is better than ugly（+uv 与 +pyenv 互斥，工具链在 pyenv 上，去掉 +uv）
        ;;qt                ; the 'cutest' gui framework ever
        ;;racket            ; a DSL for DSLs
        ;;raku              ; the artist formerly known as perl6
@@ -215,6 +215,10 @@
        blamer
        magit
        editing
+       modeline
+       shell-utils
+       treesit
+       utilities
        reader
        ;; awesome-tray
        translate

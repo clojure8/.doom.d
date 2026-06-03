@@ -1,7 +1,7 @@
 ;;; my/gptel/config.el -*- lexical-binding: t; -*-
 
 (use-package! gptel
-
+  :commands (gptel gptel-send gptel-request)
   :config
   ;; DeepSeek 后端配置
   (gptel-make-openai "DeepSeek"
@@ -26,12 +26,4 @@
 
   ;; 性能优化设置
   (setq gptel-max-tokens 2000)           ; 限制响应长度
-  (setq gptel-temperature 0.7)           ; 降低随机性
-  (setq gptel-response-filter-fn nil)    ; 禁用响应过滤以提高性能
-  (setq gptel-playback nil)              ; 禁用回放功能
-  (setq gptel-show-reasoning nil)
-
-  ;; 网络超时设置
-  (setq gptel-request-timeout 30)        ; 30秒超时
-
-  )
+  (setq gptel-temperature 0.7))          ; 降低随机性

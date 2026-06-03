@@ -9,9 +9,49 @@
 ;; (setq user-full-name "John Doe"
 ;;       user-mail-address "john@doe.com")
 
-;; emacsclient -nw 偶尔出现 menu-bar 的兜底修复。
-;; Doom 在 macOS 上用 'tty 哨兵延迟初始化 menu-bar，after-make-frame-functions
-;; 存在竞态，server-after-make-frame-hook 在 frame 完全就绪后执行，更可靠。
+;; ── GUI 外观：放「顶层」而非 server-after-make-frame-hook ───────────────────
+;; 关键：default-frame-alist 和这些全局变量必须在「配置加载时」就绪，frame 创建时
+;; 才会被读取——这样 daemon 的第一个 emacsclient frame 也带上。
+;; 若塞进 server-after-make-frame-hook，hook 在 frame 建好「之后」才跑，等于马后炮：
+;;   · 首帧的 default-frame-alist 类参数（尤其 fullscreen）根本来不及生效；
+;;   · NS 透明标题栏这类即便事后 set-frame-parameter 补设也刷不彻底（要重建 frame）。
+;; 这些 NS 变量/参数在 tty 下被忽略，无副作用，所以无需 display-graphic-p 守卫。
+(setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 14)
+      frame-title-format ""              ; 标题栏不显示标题文字
+      icon-title-format ""
+      ns-use-srgb-colorspace nil         ; 避免颜色失真（macOS Cocoa）
+      ns-use-proxy-icon nil)             ; 去掉标题栏左侧的文件代理小图标
+
+;; frame 参数：开机即进 default-frame-alist，首帧创建时直接读取（idempotent）
+;;   fullscreen=maximized        —— 启动即最大化
+;;   ns-transparent-titlebar=t   —— 标题栏与背景融合（仍可拖动、交通灯还在）
+;;   ns-appearance=dark          —— 配 doom-one 深色主题；换浅色主题改 light
+(dolist (p '((fullscreen . maximized)
+             (ns-transparent-titlebar . t)
+             (ns-appearance . dark)))
+  (add-to-list 'default-frame-alist p))
+
+;; 已存在的 GUI frame 也补设一遍：
+;;   · 直接启动 Emacs.app（非 daemon）时，初始 frame 在 config 加载「之前」就建好了，
+;;     default-frame-alist 对它来不及，这里直接 modify-frame-parameters 补上。
+;;   · daemon 模式下此刻没有 GUI frame，循环为空，由 default-frame-alist 接管首帧。
+;; （ns-transparent-titlebar 对已存在 frame 可能要新建 frame 才彻底刷新，属 macOS 限制。）
+(dolist (f (frame-list))
+  (when (display-graphic-p f)
+    (modify-frame-parameters
+     f '((fullscreen . maximized)
+         (ns-transparent-titlebar . t)
+         (ns-appearance . dark)))))
+
+(custom-set-faces!
+  '(aw-leading-char-face :foreground "red" :weight bold :height 400))
+
+;; 像素级平滑滚动（全局开启；tty 下无副作用）
+(pixel-scroll-precision-mode 1)
+
+;; ── tty menu-bar 兜底：这个才真正需要 per-frame hook ────────────────────────
+;; emacsclient -nw 偶尔出现 menu-bar；Doom 在 macOS 用 'tty 哨兵延迟初始化，
+;; after-make-frame-functions 有竞态，server-after-make-frame-hook 在 frame 就绪后更可靠。
 (add-hook 'server-after-make-frame-hook
           (lambda ()
             (unless (display-graphic-p)
@@ -48,7 +88,6 @@
               json-reformat:indent-width 2
               ;; Python
               python-indent-offset 4
-              go-ts-mode-indent-offset 4
               ;; CSS / SCSS / Less（web：2 空格）
               css-indent-offset 2
               ;; web-mode（html/vue/jsx：2 空格）
@@ -79,11 +118,7 @@
               yaml-ts-mode-indent-offset 4
               dockerfile-ts-mode-indent-offset 4
               cmake-ts-mode-indent-offset 4
-              heex-ts-mode-indent-offset 4
-              elixir-ts-mode-indent-offset 4
-              nix-ts-mode-indent-offset 4
-              php-ts-mode-indent-offset 4
-              ;; go-ts-mode-indent-offset 在下方 go-ts-mode-hook 里另设
+              ;; go-ts-mode-indent-offset 由 golang 模块的 hook 另设
               ;; （Go 用真实 tab，indent-tabs-mode t）。
               ;; bash-ts-mode / js-ts-mode / python-ts-mode 复用上面的
               ;; sh-basic-offset / js-indent-level / python-indent-offset
@@ -97,29 +132,6 @@
 ;; 鼠标滚轮优化
 (setq mouse-wheel-scroll-amount '(1 ((control) . 5)))
 
-(when (display-graphic-p)
-  ;; 避免颜色失真（macOS Cocoa 专用）
-  (setq ns-use-srgb-colorspace nil)
-
-  (setq doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 14))
-  ;; (setq doom-font (font-spec :family "霞鹜文楷等宽" :size 14))
-  (setq frame-title-format "")
-
-  ;; 设置 ace-window 超大字体
-  (custom-set-faces!
-    '(aw-leading-char-face
-      :foreground "red"
-      :weight bold
-      :height 400))
-
-  ;; 像素级别平滑滚动
-  (pixel-scroll-precision-mode 1)
-
-  (add-to-list 'default-frame-alist '(fullscreen . maximized)))
-;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
-;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
-;; refresh your font settings. If Emacs still can't find your font, it likely
-;; wasn't installed correctly. Font issues are rarely Doom issues!
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -169,15 +181,18 @@
 
 
 ;; 修改默认快捷键
+;; 故意让 SPC 直接执行 M-x，而非打开 which-key 菜单。
+;; 如需 which-key 前缀菜单，改用 SPC : 或恢复默认 SPC SPC。
 (map! :leader
       :desc "Execute command" "SPC" #'execute-extended-command)
 (map! "s-p" #'switch-to-buffer)
 
 
 ;; doom-one 给 `magit-header-line' 脸设了 3px 蓝色 :box，magit-log 等缓冲区顶部
-;; 的 header-line 会因此显示为“四周一圈高亮边框”。这里去掉边框。
-(custom-set-faces!
-  '(magit-header-line :box nil))
+;; 的 header-line 会因此显示为"四周一圈高亮边框"。这里去掉边框。
+(after! magit
+  (custom-set-faces!
+    '(magit-header-line :box nil)))
 
 ;; 放大 window-select 的提示字体（GUI 下使用像素倍数，TUI 下使用固定绝对高度）
 (after! window-select
@@ -189,64 +204,6 @@
     (set-face-attribute 'doom-window-select-number-face nil :height 200)))
 
 
-
-
-(use-package! dwim-shell-command
-  :bind (([remap shell-command] . dwim-shell-command)
-         :map dired-mode-map
-         ([remap dired-do-async-shell-command] . dwim-shell-command)
-         ([remap dired-do-shell-command] . dwim-shell-command)
-         ([remap dired-smart-shell-command] . dwim-shell-command))
-  :config
-  (defun dwim-shell-commands-macos-open-with ()
-    "Convert all marked images to jpg(s)."
-    (interactive)
-    (let* ((apps (seq-sort
-                  #'string-lessp
-                  (seq-mapcat (lambda (paths)
-                                (directory-files-recursively
-                                 paths "\\.app$" t (lambda (path)
-                                                     (not (string-suffix-p ".app" path)))))
-                              '("/Applications" "~/Applications" "/System/Applications"))))
-           (selection (progn
-                        (cl-assert apps nil "No apps found")
-                        (completing-read "Open with: "
-                                         (mapcar (lambda (path)
-                                                   (propertize (file-name-base path) 'path path))
-                                                 apps)))))
-      (dwim-shell-command-on-marked-files
-       "Open with"
-       (format "open -a '%s' '<<*>>'" (get-text-property 0 'path selection))
-       :silent-success t
-       :no-progress t
-       :utils "open"))))
-
-;; treesit-auto: 自动切换到 tree-sitter 版本的 major-mode
-;;
-;; ⚠️ 性能坑（已修）：treesit-auto 给 `set-auto-mode-0' 挂了 :before advice，
-;; 每次打开文件都会遍历所有 recipe 调 `treesit-ready-p' 重建 remap 表。grammar
-;; 已装的语言探测很快，但**未装** grammar 的语言在 macOS 上每次 dlopen 探测约
-;; 29ms 且不缓存；对 markdown 这类未装 grammar 的类型还会触发 `revert-buffer'
-;; 递归，把整套扫描重复 ~3 遍 → 单次开文件阻塞 5~10s（本机未装的 grammar 有 50 个）。
-;;
-;; 修复：
-;;   1. `treesit-auto-install nil' —— 本机网络/代理下 grammar 根本下载不下来，
-;;      关掉无谓的安装尝试（缺失就静默回退普通 major-mode）。
-;;   2. 启动时把 `treesit-auto-langs' 过滤成「grammar 已安装」的子集 —— 未装的
-;;      语言反正用不了 ts-mode，移出 recipe 后开文件不再对它们反复探测。
-;; 效果：打开 markdown 等文件从 ~9.8s 降到 ~0.27s。
-(use-package! treesit-auto
-  :config
-  (setq treesit-auto-install nil)
-  ;; markdown / markdown-inline：本机未装 grammar，且我们已用 major-mode-remap-alist
-  ;; 强制 markdown → gfm-mode（markdown-ts-mode 无标题分级等特性，并不想要），显式
-  ;; 排除，避免首次开 .md 时还去探测一次缺失的 markdown-inline grammar。
-  (setq treesit-auto-langs
-        (seq-filter (lambda (lang)
-                      (and (not (memq lang '(markdown markdown-inline)))
-                           (treesit-ready-p lang t)))
-                    treesit-auto-langs))
-  (global-treesit-auto-mode))
 
 ;; 范围高亮
 (setq show-paren-style 'expression
@@ -272,71 +229,4 @@
 ;; 把分页符 ^L 渲染成一条横线（C-x [ / C-x ] 按页跳转更直观）
 (use-package! page-break-lines
   :config (global-page-break-lines-mode))
-
-;; ── doom-modeline 瘦身：高度按字体行高比例（可配置）──────────────────────
-;; 改 `+modeline-height-ratio' 调高度：1.0=与字体等高（最瘦），1.1~1.3 留点留白。
-;; 改后 `M-x +modeline/apply-height' 即时生效（或重启）。
-(defcustom +modeline-height-ratio 1.0
-  "doom-modeline 高度相对字体行高 `frame-char-height' 的倍数。"
-  :type 'number
-  :group 'doom-modeline
-  :set (lambda (sym val)
-         (set-default sym val)
-         (when (fboundp '+modeline/apply-height) (+modeline/apply-height))))
-
-(defun +modeline/apply-height (&rest _)
-  "按 `+modeline-height-ratio' 把 doom-modeline 高度设成字体行高的比例。"
-  (interactive)
-  (when (and (display-graphic-p) (boundp 'doom-modeline-height))
-    (setq doom-modeline-height
-          (max 1 (round (* +modeline-height-ratio (frame-char-height)))))
-    (when (fboundp 'doom-modeline-refresh-bars)
-      (doom-modeline-refresh-bars))))
-
-(after! doom-modeline
-  (+modeline/apply-height))
-;; 字体 / 主题 / 新建 frame（daemon 首帧）变化时重算高度
-(add-hook 'after-setting-font-hook      #'+modeline/apply-height)
-(add-hook 'doom-load-theme-hook         #'+modeline/apply-height)
-(add-hook 'server-after-make-frame-hook #'+modeline/apply-height)
-
-;; ── 小工具集成：大文件 / grep 批量编辑 / 跳转历史 / 可视化 undo / 快速切目录 ──
-(use-package! vlf
-  :commands (vlf vlf-mode)
-  :init
-  (map! :leader
-        :desc "Open large file with VLF" "f V" #'vlf))
-
-(use-package! wgrep
-  :commands (wgrep-change-to-wgrep-mode)
-  :init
-  (map! :after grep
-        :map grep-mode-map
-        :n "e" #'wgrep-change-to-wgrep-mode))
-
-(use-package! dogears
-  :commands (dogears-back dogears-forward dogears-list dogears-go dogears-mode)
-  :hook (doom-first-buffer . dogears-mode)
-  :init
-  (map! :leader
-        (:prefix ("j" . "jump")
-         :desc "Dogears back"    "b" #'dogears-back
-         :desc "Dogears forward" "f" #'dogears-forward
-         :desc "Dogears list"    "l" #'dogears-list)))
-
-(use-package! vundo
-  :commands vundo
-  :init
-  (map! :leader
-        (:prefix ("o" . "open")
-         :desc "Visual undo" "u" #'vundo)))
-
-(use-package! consult-dir
-  :commands (consult-dir consult-dir-jump-file)
-  :init
-  (map! :leader
-        :desc "Switch directory" "f D" #'consult-dir
-        :map minibuffer-local-completion-map
-        "C-x C-d" #'consult-dir
-        "C-x C-j" #'consult-dir-jump-file))
 

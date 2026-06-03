@@ -9,18 +9,10 @@
                treemacs-git-mode-hook)
              #'hide-mode-line-mode)
 
-  (defun +my-hide-special-mode-line-h ()
-    (when (or (string-match-p "^\\*Treemacs" (buffer-name))
-              (derived-mode-p 'magit-mode 'magit-diff-mode 'magit-status-mode 'magit-log-mode))
-      (hide-mode-line-mode)))
-
-  (dolist (hook '(treemacs-mode-hook
-                  magit-mode-hook
-                  magit-diff-mode-hook
-                  magit-status-mode-hook
-                  magit-log-mode-hook))
-
-    (add-hook! hook #'+my-hide-special-mode-line-h)))
+  ;; magit-diff/status/log 都继承 magit-mode，只需挂 magit-mode-hook
+  (add-hook! 'magit-mode-hook
+    (defun +my-hide-magit-mode-line-h ()
+      (hide-mode-line-mode))))
 
 
 (use-package! awesome-tray
@@ -34,7 +26,4 @@
     (setq awesome-tray-mode-line-height 0.1))
   (setq awesome-tray-active-modules
         '("evil" "buffer-name" "file-path" "git" "mode-name"))
-  (add-hook! 'doom-load-theme-hook #'awesome-tray-mode #'hide-mode-line-mode)
-
-  ;; Hook to ensure both modes are active when window configuration changes
-  (add-hook! 'window-configuration-change-hook #'hide-mode-line-mode #'awesome-tray-mode))
+  (add-hook! 'doom-load-theme-hook #'awesome-tray-mode #'hide-mode-line-mode))
