@@ -61,3 +61,9 @@
 ;; Info 手册彩色化 + 漂亮的分页符（^L → 横线）
 (package! info-colors)
 (package! page-break-lines)
+
+;; 启动提速：禁用 esh-help（eshell 的 eldoc，会显示命令的 man 摘要）。
+;; combobulate 的坏 autoload 在启动时强制载入整包 → 拽出 python→pyvenv→eshell，
+;; eshell 一加载 esh-help（:after eshell）就 `(require 'man)'，而 man.el 加载时跑
+;; 子进程探测 manpath/sed 约 0.86s——启动链里最大单点。禁掉这个小功能即可断链。
+(package! esh-help :disable t)
