@@ -8,18 +8,25 @@
 ;;
 ;; 这里把 `lsp-bridge-python-command' pin 到「第一个能 import epc+orjson」的解释器，
 ;; 优先级：环境变量 > pyenv > homebrew > 裸 python3。启动时探测一次，确定可用。
+(defun +lsp-bridge--python-ok-p (py)
+  "PY 可执行且能 import epc+orjson。"
+  (and py (not (string-empty-p py)) (file-executable-p py)
+       (zerop (call-process py nil nil nil "-c" "import epc, orjson"))))
+
 (defun +lsp-bridge--find-python ()
-  "返回第一个能 import epc+orjson 的 python 可执行路径，找不到则回退 \"python3\"。"
-  (or (cl-find-if
-       (lambda (py)
-         (and py (not (string-empty-p py)) (file-executable-p py)
-              (zerop (call-process py nil nil nil "-c" "import epc, orjson"))))
-       (list (getenv "LSP_BRIDGE_PYTHON")
-             (expand-file-name "~/.pyenv/versions/3.12.2/bin/python3")
-             (ignore-errors
-               (string-trim (shell-command-to-string "pyenv which python3 2>/dev/null")))
-             "/opt/homebrew/bin/python3"
-             "python3"))
+  "返回第一个能 import epc+orjson 的 python 可执行路径，找不到则回退 \"python3\"。
+候选用 thunk 惰性求值：`pyenv which python3' 这类 shell-out 只在前面的候选
+（环境变量、pyenv 3.12.2）都没命中时才执行——否则每次启动白跑约 100ms。"
+  (or (cl-some
+       (lambda (thunk)
+         (let ((py (funcall thunk)))
+           (and (+lsp-bridge--python-ok-p py) py)))
+       (list (lambda () (getenv "LSP_BRIDGE_PYTHON"))
+             (lambda () (expand-file-name "~/.pyenv/versions/3.12.2/bin/python3"))
+             (lambda () (ignore-errors
+                          (string-trim (shell-command-to-string "pyenv which python3 2>/dev/null"))))
+             (lambda () "/opt/homebrew/bin/python3")
+             (lambda () "python3")))
       "python3"))
 
 (use-package! lsp-bridge
