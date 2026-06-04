@@ -34,3 +34,32 @@
   (setq lsp-bridge-python-command (+lsp-bridge--find-python))
   :config
   (global-lsp-bridge-mode))
+
+;; ── acm-terminal：TTY 下的 acm 补全；GUI 仍用原生 child-frame ────────────────
+;; acm 的补全菜单/文档用 child-frame，Emacs 30 的 TTY 不支持 child frame，于是
+;; 终端里补全弹窗出不来。acm-terminal 用 popon（overlay 弹窗）顶替——但它是
+;; **全局** `:override' advice（acm-terminal-active/-deactive 成对加/删 advice），
+;; all-or-nothing；且 require 时 `(unless window-system (acm-terminal-active))'
+;; 在 daemon（启动 window-system=nil）会全局激活，把 GUI frame 也变成 popon。
+;;
+;; 需求：GUI frame 用原生 acm，TTY frame 用 acm-terminal。daemon 下两类 frame 共存，
+;; 所以按「当前选中 frame 是否图形界面」动态、幂等地 toggle。
+(use-package! acm-terminal
+  :after acm
+  :config
+  (defvar +acm-terminal--active 'unset
+    "记录 acm-terminal advice 当前激活态，避免无谓地反复加/删 advice。")
+  (defun +acm-terminal-sync (&rest _)
+    "按选中 frame：GUI → 关 acm-terminal（原生 child-frame）；TTY → 开（popon）。幂等。"
+    (let ((want (not (display-graphic-p))))
+      (unless (eq want +acm-terminal--active)
+        (if want (acm-terminal-active) (acm-terminal-deactive))
+        (setq +acm-terminal--active want))))
+  ;; 抵消加载时 `(unless window-system (acm-terminal-active))' 的默认激活，
+  ;; 复位后按当前 frame 校正一次。
+  (acm-terminal-deactive)
+  (setq +acm-terminal--active nil)
+  (+acm-terminal-sync)
+  ;; 新建 frame / 切换焦点时重新判定（emacsclient -nw 与 GUI 窗口可并存）。
+  (add-hook 'server-after-make-frame-hook #'+acm-terminal-sync)
+  (add-hook 'window-selection-change-functions #'+acm-terminal-sync))
