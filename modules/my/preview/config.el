@@ -23,10 +23,10 @@
 (defvar-local +preview--tmp nil "非文件 buffer 用的临时 HTML 路径。")
 (defvar +preview--xwidget nil "复用的 xwidget-webkit 会话。")
 
-;; Doom 的 :ui popup 默认把 `^\*xwidget' 缓冲区当 popup 丢到底部（side . bottom），
-;; 且 display-buffer-alist 的优先级高于任何传给 display-buffer 的位置参数，所以光
-;; 在代码里 split-window 没用。这里加一条更具体、更靠前的规则把 xwidget-webkit 预览
-;; 放到右侧、常驻（不随 ESC 关闭、不超时回收）。
+;; 注意：Emacs 31 的 `xwidget-webkit-new-session' 用 `switch-to-buffer' 显示，
+;; 不走 display-buffer，所以这条 popup 规则对「新建预览」其实不生效——真正放右侧
+;; 是 `+preview--show-xwidget' 里自己 split-window-right 做的（见下）。这条规则保留
+;; 作为兜底：万一有别的路径用 display-buffer 显示 xwidget，也让它去右侧、常驻。
 (when (modulep! :ui popup)
   (set-popup-rule! "^\\*xwidget-webkit"
     :side 'right :width 0.5 :select nil :quit nil :ttl nil :modeline nil))
@@ -71,6 +71,15 @@
 (defun +preview--file-url (path)
   (concat "file://" (url-encode-url (expand-file-name path))))
 
+(defun +preview--show-buf-right (buf)
+  "把 BUF 显示在源窗口右侧 split 出的窗口里（已可见则不动），不抢源窗口焦点。"
+  (unless (get-buffer-window buf)
+    (let* ((src (selected-window))
+           (right (split-window-right)))
+      (select-window right)
+      (switch-to-buffer buf)
+      (when (window-live-p src) (select-window src)))))
+
 (defun +preview--show-xwidget (html)
   "在右侧分屏的 xwidget-webkit 里显示 HTML（已存在则原地重载）。"
   (unless (and (display-graphic-p) (featurep 'xwidget-internal))
@@ -81,17 +90,20 @@
                     (ignore-errors (xwidget-live-p +preview--xwidget))
                     +preview--xwidget))
          (buf  (and sess (ignore-errors (xwidget-buffer sess)))))
-    ;; 窗口位置统一交给上面的 popup 规则（右侧）；这里只负责导航/重载与确保可见。
     (if (and sess buf (buffer-live-p buf))
-        ;; 复用会话：导航到（同一）URL 即重载，并确保它在某个窗口里可见
-        ;; （窗口可能已被关掉——曾经的 bug：只导航不重新显示，看起来“没反应”）。
+        ;; 复用会话：导航即重载，并确保它在右侧窗口里可见（窗口可能被关过）。
         (progn
           (xwidget-webkit-goto-uri sess url)
-          (unless (get-buffer-window buf) (display-buffer buf)))
-      ;; 新建会话（display 走 popup 规则到右侧），不抢源窗口焦点
-      (save-selected-window
-        (xwidget-webkit-browse-url url t)
-        (setq +preview--xwidget (xwidget-webkit-current-session))))))
+          (+preview--show-buf-right buf))
+      ;; 新建会话：Emacs 31 的 `xwidget-webkit-new-session' 用 `switch-to-buffer'
+      ;; 显示（不走 display-buffer），所以 popup 规则不生效——必须自己 split 右窗、
+      ;; 在右窗里创建 session，再把焦点还给源窗口。
+      (let* ((src (selected-window))
+             (right (split-window-right)))
+        (select-window right)
+        (xwidget-webkit-new-session url)
+        (setq +preview--xwidget (xwidget-webkit-current-session))
+        (when (window-live-p src) (select-window src))))))
 
 (defun +preview--show-browser (html)
   (browse-url (+preview--file-url html)))

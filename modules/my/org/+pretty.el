@@ -62,10 +62,15 @@
       0))
 
   (defun my/enforce-window-margins (win)
-    "Org buffer → centered margins; everything else → zero margins."
+    "Org / Markdown 且窗口占满 frame 宽 → 居中边距；
+其余（含左右分屏的窄窗口、其它 buffer）→ 零边距。"
     (when (window-live-p win)
-      (if (with-current-buffer (window-buffer win)
-            (derived-mode-p 'org-mode))
+      (if (and (with-current-buffer (window-buffer win)
+                 ;; gfm-mode 派生自 markdown-mode，一并覆盖
+                 (derived-mode-p 'org-mode 'markdown-mode))
+               ;; 左右分屏（side-by-side，如预览开在右侧）时窗口不满宽 → 不居中，
+               ;; 省出空间；上下分屏仍满宽，保持居中。
+               (window-full-width-p win))
           (set-window-margins win (my/org-calc-margin win) (my/org-calc-margin win))
         (set-window-margins win 0 0))))
 
@@ -76,6 +81,14 @@
   (add-hook 'window-size-change-functions
             (lambda (frame)
               (dolist (win (window-list frame))
+                (my/enforce-window-margins win))))
+
+  ;; 窗口布局变化时也刷新（分屏/弹出预览/关窗等 size-change 不一定触发的场景）：
+  ;; 一旦左右分屏（如预览开在右侧），源 md/org 窗口不再满宽 → 立即去居中；
+  ;; 关掉分屏恢复满宽 → 立即重新居中。
+  (add-hook 'window-configuration-change-hook
+            (lambda ()
+              (dolist (win (window-list))
                 (my/enforce-window-margins win))))
 
   ;; org 表格行临时取消边距（全宽显示），离开恢复
