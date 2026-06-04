@@ -96,8 +96,14 @@
 
 ;; ── DAP 模式配置 ──────────────────────────────────────────────────────
 
+;; ⚠️ 性能：原来是 `:after go-mode`，意味着一加载 go-mode 就立刻 `(dap-mode 1)`
+;; 全局启用 dap-mode —— 而 dap-mode 依赖 lsp-mode / lsp-treemacs / treemacs，会把
+;; 这一整套重包（约 3.6s）在「打开 go 文件 / 启动」时全拖起来，而你平时用 lsp-bridge
+;; 根本不碰 dap。改成懒加载：只有真正按调试命令（+go/debug-* 会调 `dap-debug'，
+;; 它是 dap-mode 的 autoload）时才加载 dap-mode，下面的 :config 也才执行。
 (use-package! dap-mode
-  :after go-mode
+  :defer t
+  :commands (dap-debug dap-debug-edit-template dap-hydra)
   :init
   ;; 禁用默认的 dap-ui 控制窗口，使用自定义布局
   (setq dap-auto-configure-features '(sessions locals breakpoints expressions tooltip))
