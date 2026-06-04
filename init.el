@@ -208,7 +208,6 @@
        clojure
        combobulate
        lisp
-       gterm
        gptel
        aigen
        dirvish

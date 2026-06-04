@@ -43,7 +43,6 @@ doom sync   # 同步配置，重启 Emacs
     ├── editing/             # string-inflection 命名风格切换
     ├── golang/              # Go 完整工具链
     ├── gptel/              # AI 聊天（智谱 GLM / DeepSeek）
-    ├── gterm/               # Ghostty 引擎终端（emacs-libgterm）
     ├── jinx/                # 拼写检查（enchant，跳过 CJK）
     ├── layout/              # 窗口布局保存/恢复
     ├── lisp/                # evil-cleverparens 结构化括号编辑
@@ -88,7 +87,6 @@ Java、Swift、Lua、Nim、Zig、GraphQL、YAML、JSON、Markdown、LaTeX、Shel
 | **dirvish** | dired 现代化；`a` 书签 / `TAB` 子树 / `M-t` 全屏 |
 | **magit** | magit-delta 渲染语法高亮 diff（需 `git-delta`） |
 | **blamer** | 行内 git blame，默认关；`M-x blamer-mode` 按需开 |
-| **gterm** | Ghostty 引擎终端 |
 | **translate** | Google 翻译，中英自动互译 |
 | **layout** | 窗口布局保存/恢复 + 预设模板 |
 
