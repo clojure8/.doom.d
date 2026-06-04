@@ -35,31 +35,51 @@
   :config
   (global-lsp-bridge-mode))
 
-;; ── acm-terminal：TTY 下的 acm 补全；GUI 仍用原生 child-frame ────────────────
-;; acm 的补全菜单/文档用 child-frame，Emacs 30 的 TTY 不支持 child frame，于是
-;; 终端里补全弹窗出不来。acm-terminal 用 popon（overlay 弹窗）顶替——但它是
-;; **全局** `:override' advice（acm-terminal-active/-deactive 成对加/删 advice），
-;; all-or-nothing；且 require 时 `(unless window-system (acm-terminal-active))'
-;; 在 daemon（启动 window-system=nil）会全局激活，把 GUI frame 也变成 popon。
-;;
-;; 需求：GUI frame 用原生 acm，TTY frame 用 acm-terminal。daemon 下两类 frame 共存，
-;; 所以按「当前选中 frame 是否图形界面」动态、幂等地 toggle。
-(use-package! acm-terminal
-  :after acm
-  :config
-  (defvar +acm-terminal--active 'unset
-    "记录 acm-terminal advice 当前激活态，避免无谓地反复加/删 advice。")
-  (defun +acm-terminal-sync (&rest _)
-    "按选中 frame：GUI → 关 acm-terminal（原生 child-frame）；TTY → 开（popon）。幂等。"
-    (let ((want (not (display-graphic-p))))
-      (unless (eq want +acm-terminal--active)
-        (if want (acm-terminal-active) (acm-terminal-deactive))
-        (setq +acm-terminal--active want))))
-  ;; 抵消加载时 `(unless window-system (acm-terminal-active))' 的默认激活，
-  ;; 复位后按当前 frame 校正一次。
-  (acm-terminal-deactive)
-  (setq +acm-terminal--active nil)
-  (+acm-terminal-sync)
-  ;; 新建 frame / 切换焦点时重新判定（emacsclient -nw 与 GUI 窗口可并存）。
-  (add-hook 'server-after-make-frame-hook #'+acm-terminal-sync)
-  (add-hook 'window-selection-change-functions #'+acm-terminal-sync))
+;; ── acm 补全菜单：Emacs 31 起原生支持 TTY child frame，GUI/TTY 统一用 acm ──────
+;; acm 的补全菜单/文档/签名都用 child-frame。`acm-frame-can-display-p' 原本用
+;; `(not (display-graphic-p))' 把 TTY 一律挡掉（Emacs ≤30 的 TTY 没有 child frame）。
+;; Emacs 31 已原生支持 TTY child frame，这里放开门禁，让终端里也直接用 acm 的
+;; child-frame 菜单——GUI / TTY 同一套渲染，不再需要 acm-terminal/popon。
+(defun +acm-frame-can-display-tty-a ()
+  "放开 TTY：只要不是 noninteractive / basic-display 就允许 child-frame。
+Emacs 31 原生支持 TTY child frame，故不再要求 `display-graphic-p'。"
+  (not (or noninteractive emacs-basic-display)))
+
+(after! acm-frame
+  (when (>= emacs-major-version 31)
+    (advice-add 'acm-frame-can-display-p :override #'+acm-frame-can-display-tty-a)))
+
+;; ── acm 补全弹窗在 GUI 下「背景透明、后面代码透出来叠在候选上」的修复 ──────────
+;; 现象：补全菜单里混进 buffer 文字（candidate 后面透出代码），看着花/错位。
+;; 根因：config.el 为了主 frame 首帧就最大化+透明标题栏，把 fullscreen /
+;; ns-transparent-titlebar / ns-appearance 放进了 `default-frame-alist'——而它会
+;; 套到**所有**新建 frame，包括 acm 的补全 child-frame。Emacs 31 下 child frame
+;; 继承 ns-transparent-titlebar 后背景变透明，于是 buffer 透出来（Emacs 30 不会）。
+;; 修法：acm 建 child-frame 时把这些「主 frame 装饰参数」从 default-frame-alist 里
+;; 临时剥掉，并强制不透明背景。
+(defun +acm-frame-no-decoration-a (orig &rest args)
+  "建 acm child-frame 时不继承主 frame 的全屏/透明/外观参数，避免补全弹窗透明。"
+  ;; 必须用 let（先重绑 default-frame-alist），再在其作用域内调用 orig 建 frame。
+  (let ((default-frame-alist
+         (cl-remove-if (lambda (p)
+                         (memq (car-safe p)
+                               '(fullscreen ns-transparent-titlebar ns-appearance
+                                 alpha alpha-background)))
+                       default-frame-alist)))
+    (let ((frame (apply orig args)))
+      (when (framep frame)
+        (set-frame-parameter frame 'ns-transparent-titlebar nil)
+        (set-frame-parameter frame 'alpha-background 100)
+        (set-frame-parameter frame 'alpha nil))
+      frame)))
+
+(after! acm-frame
+  (advice-add 'acm-frame-make-frame :around #'+acm-frame-no-decoration-a))
+
+;; ── acm-terminal：暂时停用（改用 Emacs 31 原生 TTY child frame）──────────────
+;; 之前为 Emacs ≤30 的 TTY 引入 acm-terminal（popon 渲染，全局 :override advice）。
+;; 升级到 Emacs 31、有了原生 TTY child frame 后不再需要，且它的全局 advice 容易
+;; 干扰 GUI。保留 packages.el 里的 package! 声明，需要回退时取消下面注释即可。
+;; (use-package! acm-terminal
+;;   :after acm
+;;   :config ...)
