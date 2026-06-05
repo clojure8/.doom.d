@@ -187,12 +187,15 @@ export LSP_BRIDGE_PYTHON="$HOME/.pyenv/versions/3.12.2/bin/python3"
 
 | 工具 | 用途 | 安装 |
 |------|------|------|
+| `claude-agent-acp` | **agentshell 必需**：agent-shell 启动 Claude 所调用的 ACP 后端可执行文件 | `npm install -g @agentclientprotocol/claude-agent-acp` |
 | `jupyter` + `ipykernel` | 数据科学 | `pip install jupyter ipykernel` |
 | `pandoc` | markdown 预览 / org 导入导出 | `brew install pandoc` |
 | `git-delta` | magit 语法高亮 diff | `brew install git-delta` |
 | `coreutils`（`gls`） | dirvish 目录优先排序 | `brew install coreutils` |
 | `clojure-lsp` | Clojure 诊断/补全 | `brew install clojure-lsp/brew/clojure-lsp` |
 | Ollama + `qwen2.5-coder:3b` | minuet 本地补全 | `ollama pull qwen2.5-coder:3b` |
+
+> **需手动本地安装**：上述工具均不由 `doom sync` 安装，需自行装到 PATH。其中 `claude-agent-acp` 是 npm CLI 二进制（非 Emacs 包），未安装时 `agent-shell` 无法启动 Claude。安装后用 `which claude-agent-acp` 确认在 PATH 中；首次使用 Claude 订阅前，先在终端跑一次 `claude` CLI 登录。
 
 ## 维护命令
 
