@@ -31,15 +31,21 @@
 
 (use-package! lsp-bridge
   :init
-  (setq lsp-bridge-python-command (+lsp-bridge--find-python))
+  (setq lsp-bridge-python-command (+lsp-bridge--find-python)
+        ;; 关闭补全候选旁边的文档提示 child-frame，只保留补全菜单。
+        acm-enable-doc nil
+        acm-enable-doc-markdown-render nil)
   :config
+  (setq acm-enable-doc nil
+        acm-enable-doc-markdown-render nil)
   (global-lsp-bridge-mode))
 
 ;; ── acm 补全菜单：Emacs 31 起原生支持 TTY child frame，GUI/TTY 统一用 acm ──────
-;; acm 的补全菜单/文档/签名都用 child-frame。`acm-frame-can-display-p' 原本用
-;; `(not (display-graphic-p))' 把 TTY 一律挡掉（Emacs ≤30 的 TTY 没有 child frame）。
-;; Emacs 31 已原生支持 TTY child frame，这里放开门禁，让终端里也直接用 acm 的
-;; child-frame 菜单——GUI / TTY 同一套渲染，不再需要 acm-terminal/popon。
+;; 只保留补全菜单；候选文档提示由上面的 `acm-enable-doc' 关闭。
+;; `acm-frame-can-display-p' 原本用 `(not (display-graphic-p))' 把 TTY 一律挡掉
+;; （Emacs ≤30 的 TTY 没有 child frame）。Emacs 31 已原生支持 TTY child frame，
+;; 这里放开门禁，让终端里也直接用 acm 的 child-frame 菜单——GUI / TTY 同一套
+;; 渲染，不再需要 acm-terminal/popon。
 (defun +acm-frame-can-display-tty-a ()
   "放开 TTY：只要不是 noninteractive / basic-display 就允许 child-frame。
 Emacs 31 原生支持 TTY child frame，故不再要求 `display-graphic-p'。"
