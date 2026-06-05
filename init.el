@@ -218,6 +218,7 @@
        shell-utils
        treesit
        utilities
+       mermaid
        flutter
        reader
        ;; awesome-tray
